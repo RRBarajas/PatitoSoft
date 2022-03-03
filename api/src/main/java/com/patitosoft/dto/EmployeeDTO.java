@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
@@ -20,7 +19,6 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class EmployeeDTO {
 
     @Email
@@ -38,15 +36,15 @@ public class EmployeeDTO {
     @NotNull
     private PositionDTO position;
 
-    private List<EmployeePositionHistoryDTO> positionHistory;
+    @NotNull
+    private EmployeeContactDTO contact;
 
     @NotNull
     private Double salary;
 
-    private EmployeeContactDTO contact;
+    private List<EmployeePositionHistoryDTO> positionHistory;
 
-    @NotNull
-    private Boolean deleteFlg;
+    private Boolean exEmployee;
 
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @NotNull

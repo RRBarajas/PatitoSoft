@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
@@ -19,12 +18,11 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class EmployeePositionHistoryDTO {
 
     @JsonIgnore
     @NotNull
-    private Integer historyId;
+    private Long historyId;
 
     @NotNull
     private PositionDTO position;

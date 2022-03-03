@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -24,15 +25,16 @@ public class EmployeePositionHistory {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Integer historyId;
+    private Long historyId;
+
+    @ManyToOne
+    @MapsId("email")
+    @JoinColumn(name = "employee_email")
+    private Employee employee;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "position_id")
     private Position position;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "email")
-    private Employee employee;
 
     private Double salary;
 

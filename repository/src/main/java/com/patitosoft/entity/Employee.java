@@ -1,6 +1,7 @@
 package com.patitosoft.entity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -9,12 +10,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.REFRESH;
+import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.FetchType.LAZY;
 
 @Entity
@@ -31,18 +33,24 @@ public class Employee {
 
     private Character gender;
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = EAGER, cascade = ALL)
     @JoinColumn(name = "position_id")
     private Position position;
 
-    @OneToMany(mappedBy = "employee", fetch = LAZY)
-    private List<EmployeePositionHistory> positionHistory;
-
     private Double salary;
 
-    @OneToOne(fetch = LAZY)
-    @PrimaryKeyJoinColumn(name = "email", referencedColumnName = "email")
-    private EmployeeContact contact;
+    @OneToMany(fetch = LAZY, cascade = REFRESH, mappedBy = "employee")
+    private List<EmployeePositionHistory> positionHistory;
+
+    private String personalEmail;
+
+    private String phoneNumber;
+
+    private Date birthDate;
+
+    @ManyToOne(fetch = EAGER, cascade = ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
 
     private Boolean deleteFlg;
 
@@ -51,4 +59,3 @@ public class Employee {
 
     private LocalDateTime updatedOn;
 }
-
