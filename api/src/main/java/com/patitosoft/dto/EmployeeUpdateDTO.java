@@ -1,7 +1,6 @@
 package com.patitosoft.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -19,10 +18,9 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDTO {
+public class EmployeeUpdateDTO {
 
     @Email
-    @NotNull
     private String email;
 
     @NotNull
@@ -42,14 +40,6 @@ public class EmployeeDTO {
 
     @NotNull
     private EmployeeContactDTO contact;
-
-    private List<EmployeePositionHistoryDTO> positionHistory;
-
-    private Boolean exEmployee;
-
-    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @NotNull
-    private LocalDateTime createdOn;
 
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedOn;

@@ -7,7 +7,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
 import com.patitosoft.dto.EmployeeDTO;
+import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.entity.Employee;
+import com.patitosoft.entity.EmployeePositionHistory;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
@@ -26,4 +28,13 @@ public interface EmployeeMapper {
 
     List<EmployeeDTO> employeesToEmployeeDTOs(List<Employee> employee);
 
+    @Mappings({
+        @Mapping(source = "contact", target = ".")
+    })
+    Employee employeeUpdateDTOToEmployee(EmployeeUpdateDTO update);
+
+    @Mappings(
+        @Mapping(expression = "java(java.time.LocalDateTime.now())", target = "createdOn")
+    )
+    EmployeePositionHistory employeeToEmployeePositionHistory(Employee employee);
 }
