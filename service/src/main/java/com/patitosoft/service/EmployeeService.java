@@ -1,13 +1,17 @@
 package com.patitosoft.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.patitosoft.api.EmployeeApi;
+import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.entity.Employee;
@@ -31,16 +35,39 @@ public class EmployeeService implements EmployeeApi {
         return mapper.employeeToEmployeeDTO(employee);
     }
 
-    @Override
-    public EmployeeDTO adminGetEmployee(String email) {
+    public EmployeeDTO getEmployeeForAdmin(String email) {
         Employee employee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
         return mapper.employeeToEmployeeDTO(employee);
     }
 
     @Override
-    public List<EmployeeDTO> getAllEmployees() {
-        List<Employee> allEmployees = repository.findAll();
-        return mapper.employeesToEmployeeDTOs(allEmployees);
+    public List<EmployeeDTO> getEmployeesByCriteria(String firstName, String lastName, String position) {
+        return getEmployeesByCriteriaForAdmin(firstName, lastName, position, false);
+    }
+
+    public List<EmployeeDTO> getEmployeesByCriteriaForAdmin(String firstName, String lastName, String position, Boolean exEmployees) {
+        List<Employee> employees = repository.findByNameAndPosition(Optional.ofNullable(firstName).orElse(""),
+            Optional.ofNullable(lastName).orElse(""), position);
+        if (exEmployees) {
+            return mapper.employeesToEmployeeDTOs(employees);
+        }
+        return mapper.employeesToEmployeeDTOs(employees.stream().filter(e -> !e.getDeleteFlg()).collect(Collectors.toList()));
+    }
+
+    @Override
+    public BirthdaysDTO getWeeklyBirthdays() {
+        LocalDate today = LocalDate.now();
+        List<Employee> employees = repository.findByBirthDateBetween(today, today.plusDays(7));
+
+        BirthdaysDTO birthdaysDTO = new BirthdaysDTO();
+        employees.stream().filter(Objects::nonNull).forEach(e -> {
+            if (e.getBirthDate().isEqual(today)) {
+                birthdaysDTO.getToday().add(mapper.employeeToEmployeeDTO(e));
+            } else {
+                birthdaysDTO.getNextWeek().add(mapper.employeeToEmployeeDTO(e));
+            }
+        });
+        return birthdaysDTO;
     }
 
     @Override
@@ -91,6 +118,6 @@ public class EmployeeService implements EmployeeApi {
     @Override
     public EmployeeDTO reactivateEmployee(String email) {
         repository.fireOrHireEmployee(email, false, LocalDateTime.now());
-        return adminGetEmployee(email);
+        return getEmployeeForAdmin(email);
     }
 }

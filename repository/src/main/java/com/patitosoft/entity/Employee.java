@@ -1,7 +1,7 @@
 package com.patitosoft.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -46,7 +46,7 @@ public class Employee {
 
     private String phoneNumber;
 
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @ManyToOne(fetch = EAGER, cascade = ALL)
     @JoinColumn(name = "address_id")
