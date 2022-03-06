@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
+import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.service.EmployeeService;
 
 @RestController
@@ -47,7 +48,7 @@ public class EmployeeController {
         return employeeService.getWeeklyBirthdays();
     }
 
-    // TODO: All endpoints after this should only be accessible by an Admin user. We should implement security.
+    // TODO: All endpoints after this should only be accessible by an Admin user. Implement security to avoid multiple endpoints.
     @GetMapping("/admin/{email}")
     public EmployeeDTO getEmployeeForAdmin(@PathVariable String email) {
         return employeeService.getEmployeeForAdmin(email);
@@ -76,6 +77,12 @@ public class EmployeeController {
     @PutMapping("/{email}")
     public EmployeeDTO replaceEmployee(@PathVariable String email, @RequestBody @Valid EmployeeDTO employeeDTO) {
         return employeeService.replaceEmployee(email, employeeDTO);
+    }
+
+    @PatchMapping("/{email}/position/{position}")
+    public EmployeeDTO assignEmployeePosition(@PathVariable String email, @PathVariable Long position,
+        @RequestBody @Valid PositionDTO positionDTO) {
+        return employeeService.assignEmployeePosition(email, position, positionDTO);
     }
 
     @DeleteMapping("/{email}")

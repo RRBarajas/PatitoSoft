@@ -16,10 +16,13 @@ import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.entity.Employee;
+import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.repository.EmployeeRepository;
+import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
 import com.patitosoft.service.exception.InvalidEmailException;
+import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 import com.patitosoft.service.mapper.EmployeeMapper;
 
@@ -28,6 +31,9 @@ public class EmployeeService implements EmployeeApi {
 
     @Autowired
     private EmployeeRepository repository;
+
+    @Autowired
+    private EmploymentHistoryRepository historyRepository;
 
     @Autowired
     private EmployeeMapper mapper;
@@ -94,8 +100,6 @@ public class EmployeeService implements EmployeeApi {
         Employee oldEmployee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
         Employee newEmployee = mapper.employeeUpdateDTOToEmployee(employeeDTO);
 
-        // TODO: Implement logic to update positionHistory in case of a change
-
         newEmployee.setEmploymentHistory(oldEmployee.getEmploymentHistory());
         newEmployee.setDeleteFlg(oldEmployee.getDeleteFlg());
         newEmployee.setCreatedOn(oldEmployee.getCreatedOn());
@@ -120,6 +124,24 @@ public class EmployeeService implements EmployeeApi {
     }
 
     @Override
+    public EmployeeDTO assignEmployeePosition(String email, Long position, PositionDTO positionDTO) {
+        validatePositionId(position, positionDTO);
+        getEmployeeForAdmin(email);
+        Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email);
+        if (positionDTO.getCurrentPosition() && currentPosition.isPresent()) {
+            EmploymentHistory oldPosition = currentPosition.get();
+            oldPosition.setCurrent(Boolean.FALSE);
+            oldPosition.setTo(LocalDateTime.now());
+            historyRepository.save(oldPosition);
+            positionDTO.setTo(null);
+        }
+        EmploymentHistory entity = mapper.positionDTOToEmploymentHistory(positionDTO);
+        entity.setEmployeeEmail(email);
+        historyRepository.save(entity);
+        return getEmployeeForAdmin(email);
+    }
+
+    @Override
     public void fireEmployee(String email) {
         repository.fireOrHireEmployee(email, true, LocalDateTime.now());
     }
@@ -140,6 +162,12 @@ public class EmployeeService implements EmployeeApi {
         long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(PositionDTO::getCurrentPosition).count();
         if (currentPositions > 1) {
             throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
+        }
+    }
+
+    private void validatePositionId(Long position, PositionDTO positionDTO) {
+        if (!position.equals(positionDTO.getPositionId())) {
+            throw new InvalidPositionException();
         }
     }
 }
