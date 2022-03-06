@@ -11,11 +11,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.NotFound;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.EAGER;
+import static org.hibernate.annotations.NotFoundAction.IGNORE;
 
 @Entity
 @Getter
@@ -31,9 +34,6 @@ public class Employee {
 
     private Character gender;
 
-    @OneToMany(mappedBy = "employee")
-    private List<EmploymentHistory> employmentHistory;
-
     private String personalEmail;
 
     private String phoneNumber;
@@ -43,6 +43,10 @@ public class Employee {
     @ManyToOne(fetch = EAGER, cascade = ALL)
     @JoinColumn(name = "address_id")
     private Address address;
+
+    @OneToMany(mappedBy = "employee", cascade = ALL)
+    @NotFound(action = IGNORE)
+    private List<EmploymentHistory> employmentHistory;
 
     private Boolean deleteFlg;
 

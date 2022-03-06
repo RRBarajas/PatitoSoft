@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import javax.persistence.Embeddable;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-class EmploymentHistoryKey implements Serializable {
+@EqualsAndHashCode
+public class EmploymentHistoryKey implements Serializable {
 
     private String employeeEmail;
 

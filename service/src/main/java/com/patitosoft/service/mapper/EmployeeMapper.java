@@ -25,9 +25,18 @@ public interface EmployeeMapper {
         @Mapping(source = "position", target = "."),
         @Mapping(source = "current", target = "currentPosition")
     })
-    PositionDTO employmentHistoryMapper(EmploymentHistory employmentHistory);
+    PositionDTO employmentHistoryToPositionDTO(EmploymentHistory employmentHistory);
 
     List<EmployeeDTO> employeesToEmployeeDTOs(List<Employee> employee);
+
+    default Employee extendedEmployeeDTOToEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = employeeDTOToEmployee(employeeDTO);
+        employee.getEmploymentHistory().forEach(e -> {
+            e.setEmployeeEmail(employee.getEmail());
+            e.setEmployee(employee);
+        });
+        return employee;
+    }
 
     @Mappings({
         @Mapping(source = "exEmployee", target = "deleteFlg"),
@@ -35,6 +44,12 @@ public interface EmployeeMapper {
         @Mapping(source = "contact", target = ".")
     })
     Employee employeeDTOToEmployee(EmployeeDTO employeeDTO);
+
+    @Mappings({
+        @Mapping(source = ".", target = "position"),
+        @Mapping(source = "currentPosition", target = "current")
+    })
+    EmploymentHistory positionDTOToEmploymentHistory(PositionDTO positionDTO);
 
     @Mappings({
         @Mapping(source = "contact.birthDate", target = "birthDate", dateFormat = "yyyy-MM-dd"),

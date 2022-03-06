@@ -14,10 +14,13 @@ import com.patitosoft.api.EmployeeApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
+import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
+import com.patitosoft.service.exception.InvalidEmailException;
+import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 import com.patitosoft.service.mapper.EmployeeMapper;
 
 @Service
@@ -75,7 +78,9 @@ public class EmployeeService implements EmployeeApi {
         if (repository.findById(employeeDTO.getEmail()).isPresent()) {
             throw new EmployeeAlreadyExistsException(employeeDTO.getEmail());
         }
-        Employee newEmployee = mapper.employeeDTOToEmployee(employeeDTO);
+        validateSingleCurrentPosition(employeeDTO);
+
+        Employee newEmployee = mapper.extendedEmployeeDTOToEmployee(employeeDTO);
         newEmployee.setDeleteFlg(false);
         newEmployee.setCreatedOn(LocalDateTime.now());
         newEmployee.setUpdatedOn(null);
@@ -84,6 +89,8 @@ public class EmployeeService implements EmployeeApi {
 
     @Override
     public EmployeeDTO updateEmployee(String email, EmployeeUpdateDTO employeeDTO) {
+        validateEmployeeEmail(email, employeeDTO.getEmail());
+
         Employee oldEmployee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
         Employee newEmployee = mapper.employeeUpdateDTOToEmployee(employeeDTO);
 
@@ -98,6 +105,8 @@ public class EmployeeService implements EmployeeApi {
 
     @Override
     public EmployeeDTO replaceEmployee(String email, EmployeeDTO employeeDTO) {
+        validateEmployeeEmail(email, employeeDTO.getEmail());
+        validateSingleCurrentPosition(employeeDTO);
         Optional<Employee> currEmployee = repository.findById(email);
         if (currEmployee.isPresent()) {
             employeeDTO.setCreatedOn(currEmployee.get().getCreatedOn());
@@ -106,7 +115,7 @@ public class EmployeeService implements EmployeeApi {
             employeeDTO.setCreatedOn(LocalDateTime.now());
         }
         employeeDTO.setEmail(email);
-        Employee savedEmployee = repository.save(mapper.employeeDTOToEmployee(employeeDTO));
+        Employee savedEmployee = repository.save(mapper.extendedEmployeeDTOToEmployee(employeeDTO));
         return mapper.employeeToEmployeeDTO(savedEmployee);
     }
 
@@ -119,5 +128,18 @@ public class EmployeeService implements EmployeeApi {
     public EmployeeDTO reactivateEmployee(String email) {
         repository.fireOrHireEmployee(email, false, LocalDateTime.now());
         return getEmployeeForAdmin(email);
+    }
+
+    private void validateEmployeeEmail(String oldEmail, String newEmail) {
+        if (!oldEmail.equals(newEmail)) {
+            throw new InvalidEmailException();
+        }
+    }
+
+    private void validateSingleCurrentPosition(EmployeeDTO employeeDTO) {
+        long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(PositionDTO::getCurrentPosition).count();
+        if (currentPositions > 1) {
+            throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
+        }
     }
 }

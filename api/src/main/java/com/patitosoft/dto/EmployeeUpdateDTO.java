@@ -33,12 +33,6 @@ public class EmployeeUpdateDTO {
     private Character gender;
 
     @NotNull
-    private PositionDTO position;
-
-    @NotNull
-    private Double salary;
-
-    @NotNull
     private EmployeeContactDTO contact;
 
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

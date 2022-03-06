@@ -11,9 +11,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
+import com.patitosoft.service.exception.InvalidEmailException;
+import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -32,6 +35,14 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleConflictException(RuntimeException exception, WebRequest request, HttpServletRequest httpRequest) {
         log.warn(exception.getMessage());
         return handleExceptionInternal(exception, buildResponse(exception, httpRequest), new HttpHeaders(), CONFLICT, request);
+    }
+
+    @ExceptionHandler({ MultipleCurrentPositionsException.class,
+        InvalidEmailException.class })
+    public ResponseEntity<Object> handleBadRequestException(RuntimeException exception, WebRequest request,
+        HttpServletRequest httpRequest) {
+        log.warn(exception.getMessage());
+        return handleExceptionInternal(exception, buildResponse(exception, httpRequest), new HttpHeaders(), BAD_REQUEST, request);
     }
 
     @ExceptionHandler({ Exception.class })
