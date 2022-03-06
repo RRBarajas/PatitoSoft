@@ -89,7 +89,7 @@ public class EmployeeService implements EmployeeApi {
 
         // TODO: Implement logic to update positionHistory in case of a change
 
-        newEmployee.setPositionHistory(oldEmployee.getPositionHistory());
+        newEmployee.setEmploymentHistory(oldEmployee.getEmploymentHistory());
         newEmployee.setDeleteFlg(oldEmployee.getDeleteFlg());
         newEmployee.setCreatedOn(oldEmployee.getCreatedOn());
         newEmployee.setUpdatedOn(LocalDateTime.now());

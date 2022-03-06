@@ -15,9 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.REFRESH;
 import static javax.persistence.FetchType.EAGER;
-import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -33,14 +31,8 @@ public class Employee {
 
     private Character gender;
 
-    @ManyToOne(fetch = EAGER, cascade = ALL)
-    @JoinColumn(name = "position_id")
-    private Position position;
-
-    private Double salary;
-
-    @OneToMany(fetch = LAZY, cascade = REFRESH, mappedBy = "employee")
-    private List<EmployeePositionHistory> positionHistory;
+    @OneToMany(mappedBy = "employee")
+    private List<EmploymentHistory> employmentHistory;
 
     private String personalEmail;
 

@@ -19,10 +19,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
     Optional<Employee> findByEmailAndDeleteFlgFalse(String email);
 
-    @Query(value = "SELECT e FROM Employee e LEFT OUTER JOIN e.position p "
+    @Query(value = "SELECT e FROM Employee e LEFT OUTER JOIN e.employmentHistory ep "
+        + "LEFT OUTER JOIN ep.position p "
         + "WHERE lower(e.firstName) LIKE concat('%', lower(:firstName), '%') "
         + "AND lower(e.lastName) LIKE concat('%', lower(:lastName), '%') "
-        + "AND (:position IS NULL OR lower(p.positionName) = lower(:position))")
+        + "AND (:position IS NULL OR lower(p.positionName) = lower(:position)) "
+        + "AND (ep.current IS NULL or ep.current = true)")
     List<Employee> findByNameAndPosition(@Param("firstName") String firstName, @Param("lastName") String lastName,
         @Param("position") String position);
 

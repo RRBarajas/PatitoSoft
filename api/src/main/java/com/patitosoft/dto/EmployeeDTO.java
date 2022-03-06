@@ -35,15 +35,9 @@ public class EmployeeDTO {
     private Character gender;
 
     @NotNull
-    private PositionDTO position;
-
-    @NotNull
-    private Double salary;
-
-    @NotNull
     private EmployeeContactDTO contact;
 
-    private List<EmployeePositionHistoryDTO> positionHistory;
+    private List<PositionDTO> employmentHistory;
 
     private Boolean exEmployee;
 
