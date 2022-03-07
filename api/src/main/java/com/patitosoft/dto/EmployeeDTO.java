@@ -7,6 +7,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.patitosoft.views.UserType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,12 +25,15 @@ public class EmployeeDTO {
 
     @Email
     @NotNull
+    @JsonView(value = UserType.Basic.class)
     private String email;
 
     @NotNull
+    @JsonView(value = UserType.Basic.class)
     private String firstName;
 
     @NotNull
+    @JsonView(value = UserType.Basic.class)
     private String lastName;
 
     @NotNull
@@ -37,6 +42,7 @@ public class EmployeeDTO {
     @NotNull
     private EmployeeContactDTO contact;
 
+    @JsonView(value = UserType.Basic.class)
     private List<PositionDTO> employmentHistory;
 
     private Boolean exEmployee;

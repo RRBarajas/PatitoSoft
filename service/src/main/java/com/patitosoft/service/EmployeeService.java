@@ -7,10 +7,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.patitosoft.api.EmployeeApi;
+import com.patitosoft.api.EmployeeAdminApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
@@ -27,16 +26,21 @@ import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 import com.patitosoft.service.mapper.EmployeeMapper;
 
 @Service
-public class EmployeeService implements EmployeeApi {
+public class EmployeeService implements EmployeeAdminApi {
 
-    @Autowired
-    private EmployeeRepository repository;
+    private final EmployeeRepository repository;
 
-    @Autowired
-    private EmploymentHistoryRepository historyRepository;
+    private final EmploymentHistoryRepository historyRepository;
 
-    @Autowired
-    private EmployeeMapper mapper;
+    private final EmployeeMapper mapper;
+
+    public EmployeeService(EmployeeRepository repository,
+        EmploymentHistoryRepository historyRepository,
+        EmployeeMapper mapper) {
+        this.repository = repository;
+        this.historyRepository = historyRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public EmployeeDTO getEmployee(String email) {
@@ -44,6 +48,7 @@ public class EmployeeService implements EmployeeApi {
         return mapper.employeeToEmployeeDTO(employee);
     }
 
+    @Override
     public EmployeeDTO getEmployeeForAdmin(String email) {
         Employee employee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
         return mapper.employeeToEmployeeDTO(employee);
@@ -54,6 +59,7 @@ public class EmployeeService implements EmployeeApi {
         return getEmployeesByCriteriaForAdmin(firstName, lastName, position, false);
     }
 
+    @Override
     public List<EmployeeDTO> getEmployeesByCriteriaForAdmin(String firstName, String lastName, String position, Boolean exEmployees) {
         List<Employee> employees = repository.findByNameAndPosition(Optional.ofNullable(firstName).orElse(""),
             Optional.ofNullable(lastName).orElse(""), position);

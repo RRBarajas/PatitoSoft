@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.patitosoft.views.UserType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class PositionDTO {
     private Long positionId;
 
     @NotNull
+    @JsonView(value = UserType.Basic.class)
     private String positionName;
 
     @NotNull
@@ -35,5 +38,6 @@ public class PositionDTO {
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime to;
 
+    @JsonView(value = UserType.Basic.class)
     private Boolean currentPosition;
 }

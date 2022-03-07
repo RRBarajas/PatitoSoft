@@ -2,28 +2,25 @@ package com.patitosoft.api;
 
 import java.util.List;
 
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
-import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
 
+@FeignClient(path = "employees", name = "${feign.employee-api.name}", url = "${feign.employee-api.url}")
 public interface EmployeeApi {
 
-    EmployeeDTO getEmployee(String email);
+    @GetMapping(value = "/{email}")
+    EmployeeDTO getEmployee(@PathVariable("email") String email);
 
-    List<EmployeeDTO> getEmployeesByCriteria(String firstName, String lastName, String position);
+    @GetMapping(value = "/")
+    List<EmployeeDTO> getEmployeesByCriteria(@RequestParam("firstName") String firstName,
+        @RequestParam("lastName") String lastName,
+        @RequestParam("position") String position);
 
+    @GetMapping("/birthdays")
     BirthdaysDTO getWeeklyBirthdays();
-
-    EmployeeDTO createEmployee(EmployeeDTO employeeDTO);
-
-    EmployeeDTO updateEmployee(String email, EmployeeUpdateDTO employeeDTO);
-
-    EmployeeDTO replaceEmployee(String email, EmployeeDTO employeeDTO);
-
-    EmployeeDTO assignEmployeePosition(String email, Long position, PositionDTO positionDTO);
-
-    void fireEmployee(String email);
-
-    EmployeeDTO reactivateEmployee(String email);
 }
