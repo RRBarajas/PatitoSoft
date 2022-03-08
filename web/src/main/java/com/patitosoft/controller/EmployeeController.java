@@ -22,6 +22,7 @@ import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.views.UserType;
 
 @RestController
@@ -78,6 +79,11 @@ public class EmployeeController {
         @RequestParam(value = "byPosition", required = false, defaultValue = "false") Boolean position,
         @RequestParam(value = "byAddress", required = false, defaultValue = "false") Boolean address) {
         return employeeApi.getEmployeeTotals(gender, position, address);
+    }
+
+    @GetMapping(value = "/position/salaries")
+    public List<PositionSalaryRangesDTO> getSalaryRangesPerPosition() {
+        return employeeApi.getSalaryRangesPerPosition();
     }
 
     @PostMapping

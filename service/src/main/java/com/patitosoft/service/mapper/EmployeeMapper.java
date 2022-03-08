@@ -1,23 +1,31 @@
 package com.patitosoft.service.mapper;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.data.util.Pair;
 
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
+import com.patitosoft.entity.SalariesPerPosition;
 
-import static java.util.Objects.isNull;
-import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 @Mapper(componentModel = "spring")
@@ -71,25 +79,58 @@ public interface EmployeeMapper {
             return null;
         }
         EmployeeTotalsDTO employeeTotalsDTO = new EmployeeTotalsDTO();
-        List<EmployeeForTotals> activeEmployees =
-            employeeForTotals.stream().filter(e -> isNull(e.getCurrent()) || e.getCurrent()).collect(toList());
-        employeeTotalsDTO.setTotal(activeEmployees.size());
+        employeeTotalsDTO.setTotal(employeeForTotals.stream().map(EmployeeForTotals::getEmail).distinct().count());
 
         if (gender.equals(Boolean.TRUE)) {
-            employeeTotalsDTO.setGender(
-                activeEmployees.stream().collect(
-                    groupingBy(EmployeeForTotals::getGender, summingInt(e -> 1))));
-        }
-        if (position.equals(Boolean.TRUE)) {
-            employeeTotalsDTO.setPosition(
-                activeEmployees.stream().collect(
-                    groupingBy(e -> ofNullable(e.getPosition()).orElse("No Job"), summingInt(e -> 1))));
+            Map<Character, Long> byGender = employeeForTotals.stream()
+                .map(e -> Pair.of(e.getGender(), e.getEmail())).distinct()
+                .collect(groupingBy(Pair::getFirst, counting()));
+            employeeTotalsDTO.setGender(byGender);
         }
         if (address.equals(Boolean.TRUE)) {
-            employeeTotalsDTO.setAddress(activeEmployees.stream().collect(
-                groupingBy(EmployeeForTotals::getCountry,
-                    groupingBy(EmployeeForTotals::getState, summingInt(e -> 1)))));
+            Map<String, Map<String, Long>> byAddress = employeeForTotals.stream()
+                .map(e -> Pair.of(e.getCountry(), Pair.of(e.getState(), e.getEmail()))).distinct()
+                .collect(groupingBy(Pair::getFirst,
+                    groupingBy(c -> c.getSecond().getFirst(), counting())));
+            employeeTotalsDTO.setAddress(byAddress);
+        }
+        if (position.equals(Boolean.TRUE)) {
+            Map<String, Long> byPosition = new HashMap<>();
+
+            Map<String, List<String>> activePositions = employeeForTotals.stream()
+                .filter(e -> nonNull(e.getCurrent()) && e.getCurrent())
+                .collect(groupingBy(EmployeeForTotals::getPosition,
+                    mapping(EmployeeForTotals::getEmail, toList())));
+            activePositions.forEach((k, v) -> byPosition.put(k, (long) v.size()));
+
+            List<String> placedEmployees = activePositions.values().stream().flatMap(Collection::stream).collect(toList());
+
+            long inactivePositions = employeeForTotals.stream()
+                .filter(e -> !activePositions.containsKey(e.getPosition()) && !placedEmployees.contains(e.getEmail()))
+                .count();
+            byPosition.put("Unassigned", inactivePositions);
+
+            employeeTotalsDTO.setPosition(byPosition);
         }
         return employeeTotalsDTO;
+    }
+
+    default List<PositionSalaryRangesDTO> salariesPerPositionToDTO(List<SalariesPerPosition> salariesPerPosition) {
+        if (salariesPerPosition == null) {
+            return null;
+        }
+        List<PositionSalaryRangesDTO> positionSalaryRangesDTO = new ArrayList<>();
+
+        Map<String, Map<Double, Long>> activePositions = salariesPerPosition.stream()
+            .filter(p -> nonNull(p.getCurrent()) && p.getCurrent()).collect(
+                groupingBy(SalariesPerPosition::getPosition,
+                    groupingBy(SalariesPerPosition::getSalary, counting())));
+        activePositions.forEach((k, v) -> positionSalaryRangesDTO.add(new PositionSalaryRangesDTO(k, v)));
+
+        Stream<String> inactivePositions = salariesPerPosition.stream().map(SalariesPerPosition::getPosition)
+            .filter(position -> !activePositions.containsKey(position)).distinct();
+        inactivePositions.forEach(p -> positionSalaryRangesDTO.add(new PositionSalaryRangesDTO(p, null)));
+
+        return positionSalaryRangesDTO;
     }
 }

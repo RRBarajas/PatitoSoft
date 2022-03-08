@@ -16,6 +16,7 @@ import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.dto.PositionSalaryRangesDTO;
 
 @FeignClient(path = "employees", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}", primary = false)
 public interface EmployeeAdminApi extends EmployeeApi {
@@ -33,6 +34,9 @@ public interface EmployeeAdminApi extends EmployeeApi {
     EmployeeTotalsDTO getEmployeeTotals(@RequestParam("byGender") Boolean gender,
         @RequestParam("byPosition") Boolean position,
         @RequestParam("byAddress") Boolean address);
+
+    @GetMapping(value = "/position/salaries")
+    List<PositionSalaryRangesDTO> getSalaryRangesPerPosition();
 
     @PostMapping
     EmployeeDTO createEmployee(@RequestBody EmployeeDTO employeeDTO);

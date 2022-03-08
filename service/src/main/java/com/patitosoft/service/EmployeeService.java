@@ -15,9 +15,11 @@ import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
+import com.patitosoft.entity.SalariesPerPosition;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
@@ -75,6 +77,12 @@ public class EmployeeService implements EmployeeAdminApi {
     public EmployeeTotalsDTO getEmployeeTotals(Boolean gender, Boolean position, Boolean address) {
         List<EmployeeForTotals> totals = repository.findEmployeesForTotals();
         return mapper.employeeTotalsToEmployeeTotalsDTO(totals, gender, position, address);
+    }
+
+    @Override
+    public List<PositionSalaryRangesDTO> getSalaryRangesPerPosition() {
+        List<SalariesPerPosition> salaryRangesByPosition = historyRepository.findSalaryRangesByPosition();
+        return mapper.salariesPerPositionToDTO(salaryRangesByPosition);
     }
 
     @Override

@@ -16,11 +16,11 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonInclude(NON_NULL)
 public class EmployeeTotalsDTO {
 
-    private Integer total;
+    private Long total;
 
-    private Map<Character, Integer> gender;
+    private Map<Character, Long> gender;
 
-    private Map<String, Integer> position;
+    private Map<String, Long> position;
 
-    private Map<String, Map<String, Integer>> address;
+    private Map<String, Map<String, Long>> address;
 }
