@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.patitosoft.dto.EmployeeDTO;
+import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 
@@ -27,6 +28,11 @@ public interface EmployeeAdminApi extends EmployeeApi {
         @RequestParam("lastName") String lastName,
         @RequestParam("position") String position,
         @RequestParam("exEmployees") Boolean exEmployees);
+
+    @GetMapping(value = "/totals")
+    EmployeeTotalsDTO getEmployeeTotals(@RequestParam("byGender") Boolean gender,
+        @RequestParam("byPosition") Boolean position,
+        @RequestParam("byAddress") Boolean address);
 
     @PostMapping
     EmployeeDTO createEmployee(@RequestBody EmployeeDTO employeeDTO);

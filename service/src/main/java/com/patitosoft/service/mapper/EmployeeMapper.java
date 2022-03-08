@@ -7,10 +7,18 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
 import com.patitosoft.dto.EmployeeDTO;
+import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.entity.Employee;
+import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
+
+import static java.util.Objects.isNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.toList;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
@@ -57,4 +65,31 @@ public interface EmployeeMapper {
     })
     Employee employeeUpdateDTOToEmployee(EmployeeUpdateDTO update);
 
+    default EmployeeTotalsDTO employeeTotalsToEmployeeTotalsDTO(List<EmployeeForTotals> employeeForTotals,
+        Boolean gender, Boolean position, Boolean address) {
+        if (employeeForTotals == null) {
+            return null;
+        }
+        EmployeeTotalsDTO employeeTotalsDTO = new EmployeeTotalsDTO();
+        List<EmployeeForTotals> activeEmployees =
+            employeeForTotals.stream().filter(e -> isNull(e.getCurrent()) || e.getCurrent()).collect(toList());
+        employeeTotalsDTO.setTotal(activeEmployees.size());
+
+        if (gender.equals(Boolean.TRUE)) {
+            employeeTotalsDTO.setGender(
+                activeEmployees.stream().collect(
+                    groupingBy(EmployeeForTotals::getGender, summingInt(e -> 1))));
+        }
+        if (position.equals(Boolean.TRUE)) {
+            employeeTotalsDTO.setPosition(
+                activeEmployees.stream().collect(
+                    groupingBy(e -> ofNullable(e.getPosition()).orElse("No Job"), summingInt(e -> 1))));
+        }
+        if (address.equals(Boolean.TRUE)) {
+            employeeTotalsDTO.setAddress(activeEmployees.stream().collect(
+                groupingBy(EmployeeForTotals::getCountry,
+                    groupingBy(EmployeeForTotals::getState, summingInt(e -> 1)))));
+        }
+        return employeeTotalsDTO;
+    }
 }

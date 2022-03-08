@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.patitosoft.api.EmployeeAdminApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
+import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.views.UserType;
@@ -69,6 +70,14 @@ public class EmployeeController {
         @RequestParam(value = "exEmployees", required = false, defaultValue = "false") Boolean exEmployees
     ) {
         return employeeApi.getEmployeesByCriteriaForAdmin(firstName, lastName, position, exEmployees);
+    }
+
+    @GetMapping(value = "/totals")
+    public EmployeeTotalsDTO getEmployeeTotals(
+        @RequestParam(value = "byGender", required = false, defaultValue = "false") Boolean gender,
+        @RequestParam(value = "byPosition", required = false, defaultValue = "false") Boolean position,
+        @RequestParam(value = "byAddress", required = false, defaultValue = "false") Boolean address) {
+        return employeeApi.getEmployeeTotals(gender, position, address);
     }
 
     @PostMapping

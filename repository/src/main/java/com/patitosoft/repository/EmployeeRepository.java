@@ -13,13 +13,15 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.patitosoft.entity.Employee;
+import com.patitosoft.entity.EmployeeForTotals;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
     Optional<Employee> findByEmailAndDeleteFlgFalse(String email);
 
-    @Query(value = "SELECT e FROM Employee e LEFT OUTER JOIN e.employmentHistory ep "
+    @Query(value = "SELECT e FROM Employee e "
+        + "LEFT OUTER JOIN e.employmentHistory ep "
         + "LEFT OUTER JOIN ep.position p "
         + "WHERE lower(e.firstName) LIKE concat('%', lower(:firstName), '%') "
         + "AND lower(e.lastName) LIKE concat('%', lower(:lastName), '%') "
@@ -29,6 +31,17 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
         @Param("position") String position);
 
     List<Employee> findByBirthDateBetween(LocalDate today, LocalDate nextWeek);
+
+    @Query(value = "SELECT e.email as email, e.gender as gender, "
+        + "p.positionName as position, "
+        + "a.countryName as country, a.stateName as state, "
+        + "ep.current as current "
+        + "FROM Employee e "
+        + "LEFT OUTER JOIN e.address a "
+        + "LEFT OUTER JOIN e.employmentHistory ep "
+        + "LEFT OUTER JOIN ep.position p "
+        + "WHERE e.deleteFlg = false")
+    List<EmployeeForTotals> findEmployeesForTotals();
 
     @Transactional
     @Modifying

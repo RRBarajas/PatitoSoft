@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 import com.patitosoft.api.EmployeeAdminApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
+import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.entity.Employee;
+import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
@@ -67,6 +69,12 @@ public class EmployeeService implements EmployeeAdminApi {
             return mapper.employeesToEmployeeDTOs(employees);
         }
         return mapper.employeesToEmployeeDTOs(employees.stream().filter(e -> !e.getDeleteFlg()).collect(Collectors.toList()));
+    }
+
+    @Override
+    public EmployeeTotalsDTO getEmployeeTotals(Boolean gender, Boolean position, Boolean address) {
+        List<EmployeeForTotals> totals = repository.findEmployeesForTotals();
+        return mapper.employeeTotalsToEmployeeTotalsDTO(totals, gender, position, address);
     }
 
     @Override
