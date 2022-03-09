@@ -1,6 +1,6 @@
 package com.patitosoft.service.mapper;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -213,7 +213,7 @@ class EmployeeMapperTest {
 
     @Test
     void salariesPerPositionToDTO_ReturnEmptyList_IfNoPositions() {
-        List<PositionSalaryRangesDTO> positions = mapper.salariesPerPositionToDTO(new ArrayList<>());
+        List<PositionSalaryRangesDTO> positions = mapper.salariesPerPositionToDTO(Collections.emptyList());
 
         assertNotNull(positions);
         assertEquals(0, positions.size());

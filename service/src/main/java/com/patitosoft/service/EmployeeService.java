@@ -90,6 +90,7 @@ public class EmployeeService implements EmployeeAdminApi {
         LocalDate today = LocalDate.now();
         List<Employee> employees = repository.findByBirthDateBetween(today, today.plusDays(7));
 
+        // TODO: Maybe we could move this to its own mapper
         BirthdaysDTO birthdaysDTO = new BirthdaysDTO();
         employees.stream().filter(Objects::nonNull).forEach(e -> {
             if (e.getBirthDate().isEqual(today)) {

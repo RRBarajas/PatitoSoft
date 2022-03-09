@@ -52,12 +52,20 @@ public class EmployeeDTOUtils {
     }
 
     public static List<PositionDTO> getEmploymentHistory() {
+        return List.of(getPositionDTO());
+    }
+
+    public static List<PositionDTO> getDuplicatedEmploymentHistory() {
+        return List.of(getPositionDTO(), getPositionDTO());
+    }
+
+    public static PositionDTO getPositionDTO() {
         PositionDTO position = new PositionDTO();
         position.setPositionId(1L);
         position.setPositionName("Position");
         position.setSalary(100D);
         position.setFrom(LocalDateTime.now());
         position.setCurrentPosition(Boolean.TRUE);
-        return List.of(position);
+        return position;
     }
 }

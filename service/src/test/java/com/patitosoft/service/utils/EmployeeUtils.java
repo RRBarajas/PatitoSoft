@@ -22,7 +22,7 @@ public class EmployeeUtils {
         employee.setGender('M');
         employee.setBirthDate(LocalDate.now());
         employee.setAddress(getAddress());
-        employee.setEmploymentHistory(getEmploymentHistory());
+        employee.setEmploymentHistory(getEmploymentHistoryList());
         employee.setDeleteFlg(Boolean.FALSE);
         employee.setCreatedOn(LocalDateTime.now());
         return employee;
@@ -31,6 +31,12 @@ public class EmployeeUtils {
     public static List<Employee> getEmployeesListWithOneNull() {
         ArrayList<Employee> employees = new ArrayList<>();
         employees.add(null);
+        return employees;
+    }
+
+    public static List<Employee> getEmployeesList() {
+        ArrayList<Employee> employees = new ArrayList<>();
+        employees.add(getCompleteEmployee());
         return employees;
     }
 
@@ -50,16 +56,19 @@ public class EmployeeUtils {
         return position;
     }
 
-    public static List<EmploymentHistory> getEmploymentHistory() {
+    public static EmploymentHistory getEmploymentHistory() {
         EmploymentHistory employmentHistory = new EmploymentHistory();
         employmentHistory.setPosition(getPosition());
         employmentHistory.setPositionId(employmentHistory.getPosition().getPositionId());
         employmentHistory.setSalary(100D);
         employmentHistory.setFrom(LocalDateTime.now());
         employmentHistory.setCurrent(Boolean.TRUE);
-        return List.of(employmentHistory);
+        return employmentHistory;
     }
 
+    public static List<EmploymentHistory> getEmploymentHistoryList() {
+        return List.of(getEmploymentHistory());
+    }
     public static List<EmployeeForTotals> getEmployeeForTotals() {
         // To have good coverage, it is important that we have employees meeting the following criteria:
         // Regular employees with ACTIVE positions (employee1)

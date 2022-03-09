@@ -7,10 +7,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.patitosoft.views.UserType;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @JsonView(value = UserType.Basic.class)
 public class BirthdaysDTO {
 
