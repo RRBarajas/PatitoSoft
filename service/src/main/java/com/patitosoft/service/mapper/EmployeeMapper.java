@@ -1,8 +1,11 @@
 package com.patitosoft.service.mapper;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -13,15 +16,18 @@ import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.util.Pair;
 
+import com.patitosoft.dto.BirthdaysDTO;
+import com.patitosoft.dto.BirthdaysDTO.BirthdayPair;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.EmployeesBirthdays;
+import com.patitosoft.projections.SalariesPerPosition;
 
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.counting;
@@ -148,5 +154,27 @@ public interface EmployeeMapper {
         inactivePositions.forEach(p -> positionSalaryRangesDTO.add(new PositionSalaryRangesDTO(p, null)));
 
         return positionSalaryRangesDTO;
+    }
+
+    default BirthdaysDTO employeesBirthDaysToDTO(List<EmployeesBirthdays> employees, LocalDate filterDate) {
+        if (employees == null) {
+            return null;
+        }
+
+        // Get a list of the filter date birthdays
+        List<BirthdayPair> today = employees.stream()
+            .filter(b -> b.getBirthDate().equals(filterDate))
+            .map(b -> new BirthdayPair(b.getEmail(), b.getName()))
+            .collect(toList());
+
+        // The rest get grouped in lists by their respective (sorted) birthdate
+        LinkedHashMap<LocalDate, List<BirthdayPair>> nextWeek = employees.stream()
+            .filter(b -> !b.getBirthDate().equals(filterDate))
+            .sorted(Comparator.comparing(EmployeesBirthdays::getBirthDate))
+            .collect(groupingBy(EmployeesBirthdays::getBirthDate, LinkedHashMap::new,
+                mapping(b -> new BirthdayPair(b.getEmail(), b.getName()), toList()))
+            );
+        return new BirthdaysDTO(today, nextWeek);
+
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.entity.EmploymentHistoryKey;
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.SalariesPerPosition;
 
 @Repository
 public interface EmploymentHistoryRepository extends JpaRepository<EmploymentHistory, EmploymentHistoryKey> {

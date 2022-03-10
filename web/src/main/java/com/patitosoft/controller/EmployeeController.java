@@ -52,7 +52,6 @@ public class EmployeeController {
     }
 
     @GetMapping("/birthdays")
-    @JsonView(value = UserType.Basic.class)
     public BirthdaysDTO getWeeklyBirthdays() {
         return employeeApi.getWeeklyBirthdays();
     }

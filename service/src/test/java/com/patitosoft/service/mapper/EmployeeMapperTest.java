@@ -11,8 +11,8 @@ import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.SalariesPerPosition;
 import com.patitosoft.service.utils.EmployeeDTOUtils;
 import com.patitosoft.service.utils.EmployeeUtils;
 
@@ -235,4 +235,5 @@ class EmployeeMapperTest {
         assertEquals("Tester", positions.get(2).getPosition());
         assertNull(positions.get(2).getSalaries());
     }
+
 }

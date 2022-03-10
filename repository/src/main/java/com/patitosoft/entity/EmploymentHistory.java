@@ -14,6 +14,8 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "employment_history")
 @Getter
@@ -36,7 +38,7 @@ public class EmploymentHistory {
     @JoinColumn(name = "employeeEmail")
     private Employee employee;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @MapsId("positionId")
     @JoinColumn(name = "positionId")
     private Position position;

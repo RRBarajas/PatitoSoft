@@ -3,7 +3,6 @@ package com.patitosoft.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -17,9 +16,10 @@ import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.EmployeesBirthdays;
+import com.patitosoft.projections.SalariesPerPosition;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
@@ -88,18 +88,8 @@ public class EmployeeService implements EmployeeAdminApi {
     @Override
     public BirthdaysDTO getWeeklyBirthdays() {
         LocalDate today = LocalDate.now();
-        List<Employee> employees = repository.findByBirthDateBetween(today, today.plusDays(7));
-
-        // TODO: Maybe we could move this to its own mapper
-        BirthdaysDTO birthdaysDTO = new BirthdaysDTO();
-        employees.stream().filter(Objects::nonNull).forEach(e -> {
-            if (e.getBirthDate().isEqual(today)) {
-                birthdaysDTO.getToday().add(mapper.employeeToEmployeeDTO(e));
-            } else {
-                birthdaysDTO.getNextWeek().add(mapper.employeeToEmployeeDTO(e));
-            }
-        });
-        return birthdaysDTO;
+        List<EmployeesBirthdays> birthdays = repository.findByBirthDateBetween(today, today.plusDays(7));
+        return mapper.employeesBirthDaysToDTO(birthdays, today);
     }
 
     @Override
@@ -118,6 +108,7 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Override
     public EmployeeDTO updateEmployee(String email, EmployeeUpdateDTO employeeDTO) {
+        // TODO: We must determine what to do with NULLs, should they override the value or ignore them during update
         validateEmployeeEmail(email, employeeDTO.getEmail());
 
         Employee oldEmployee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
@@ -127,6 +118,7 @@ public class EmployeeService implements EmployeeAdminApi {
         newEmployee.setDeleteFlg(oldEmployee.getDeleteFlg());
         newEmployee.setCreatedOn(oldEmployee.getCreatedOn());
         newEmployee.setUpdatedOn(LocalDateTime.now());
+
         return mapper.employeeToEmployeeDTO(repository.save(newEmployee));
     }
 
@@ -135,13 +127,14 @@ public class EmployeeService implements EmployeeAdminApi {
         validateEmployeeEmail(email, employeeDTO.getEmail());
         validateSingleCurrentPosition(employeeDTO);
         Optional<Employee> currEmployee = repository.findById(email);
+
         if (currEmployee.isPresent()) {
             employeeDTO.setCreatedOn(currEmployee.get().getCreatedOn());
             employeeDTO.setUpdatedOn(LocalDateTime.now());
         } else {
             employeeDTO.setCreatedOn(LocalDateTime.now());
+            employeeDTO.setUpdatedOn(null);
         }
-        employeeDTO.setEmail(email);
         Employee savedEmployee = repository.save(mapper.extendedEmployeeDTOToEmployee(employeeDTO));
         return mapper.employeeToEmployeeDTO(savedEmployee);
     }
@@ -151,6 +144,8 @@ public class EmployeeService implements EmployeeAdminApi {
         validatePositionId(position, positionDTO);
         getEmployeeForAdmin(email);
         Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email);
+
+        // TODO: Where is the atomicity? Right now, if the second save fails, the first does not get rolled back
         if (positionDTO.getCurrentPosition() && currentPosition.isPresent()) {
             EmploymentHistory oldPosition = currentPosition.get();
             oldPosition.setCurrent(Boolean.FALSE);
@@ -171,6 +166,7 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Override
     public EmployeeDTO reactivateEmployee(String email) {
+        // TODO: Validate that the employee exists before attempting the update
         repository.fireOrHireEmployee(email, false, LocalDateTime.now());
         return getEmployeeForAdmin(email);
     }
@@ -182,9 +178,11 @@ public class EmployeeService implements EmployeeAdminApi {
     }
 
     private void validateSingleCurrentPosition(EmployeeDTO employeeDTO) {
-        long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(PositionDTO::getCurrentPosition).count();
-        if (currentPositions > 1) {
-            throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
+        if (employeeDTO.getEmploymentHistory() != null) {
+            long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(PositionDTO::getCurrentPosition).count();
+            if (currentPositions > 1) {
+                throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
+            }
         }
     }
 

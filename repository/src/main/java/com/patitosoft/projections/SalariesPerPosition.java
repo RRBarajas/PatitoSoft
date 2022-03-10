@@ -1,4 +1,4 @@
-package com.patitosoft.entity;
+package com.patitosoft.projections;
 
 public interface SalariesPerPosition {
 

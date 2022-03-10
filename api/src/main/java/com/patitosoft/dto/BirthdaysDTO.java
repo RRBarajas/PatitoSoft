@@ -1,23 +1,27 @@
 package com.patitosoft.dto;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.patitosoft.views.UserType;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@JsonView(value = UserType.Basic.class)
+@AllArgsConstructor
 public class BirthdaysDTO {
 
-    private List<EmployeeDTO> today;
+    private final List<BirthdayPair> today;
 
-    private List<EmployeeDTO> nextWeek;
+    private final Map<LocalDate, List<BirthdayPair>> nextWeek;
 
-    public BirthdaysDTO() {
-        this.today = new ArrayList<>();
-        this.nextWeek = new ArrayList<>();
+    @Getter
+    @AllArgsConstructor
+    public static class BirthdayPair {
+
+        private final String email;
+
+        private final String name;
     }
 }
+

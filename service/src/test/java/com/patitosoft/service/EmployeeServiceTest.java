@@ -1,6 +1,5 @@
 package com.patitosoft.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -20,8 +19,9 @@ import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.EmployeesBirthdays;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
@@ -158,28 +158,27 @@ class EmployeeServiceTest {
     }
 
     @Test
-    void getWeeklyBirthdays_ReturnTodayCount_IfTodayBirthday() {
-        List<Employee> employeesList = EmployeeUtils.getEmployeesList();
-        when(employeeRepository.findByBirthDateBetween(any(), any())).thenReturn(employeesList);
-
-        BirthdaysDTO weeklyBirthdays = employeeService.getWeeklyBirthdays();
-
-        assertNotNull(weeklyBirthdays);
-        assertEquals(1, weeklyBirthdays.getToday().size());
-        assertEquals(0, weeklyBirthdays.getNextWeek().size());
-    }
-
-    @Test
-    void getWeeklyBirthdays_ReturnNextWeekCount_IfNextWeekBirthday() {
-        List<Employee> employeesList = EmployeeUtils.getEmployeesList();
-        employeesList.get(0).setBirthDate(LocalDate.now().plusDays(5));
+    void getWeeklyBirthdays_ReturnEmptyLists_IfNoBirthdays() {
+        List<EmployeesBirthdays> employeesList = Collections.emptyList();
         when(employeeRepository.findByBirthDateBetween(any(), any())).thenReturn(employeesList);
 
         BirthdaysDTO weeklyBirthdays = employeeService.getWeeklyBirthdays();
 
         assertNotNull(weeklyBirthdays);
         assertEquals(0, weeklyBirthdays.getToday().size());
-        assertEquals(1, weeklyBirthdays.getNextWeek().size());
+        assertEquals(0, weeklyBirthdays.getNextWeek().size());
+    }
+
+    @Test
+    void getWeeklyBirthdays_ReturnBirthdayCounts_IfValidBirthdays() {
+        List<EmployeesBirthdays> employeesList = EmployeeUtils.getEmployeesBirthdays();
+        when(employeeRepository.findByBirthDateBetween(any(), any())).thenReturn(employeesList);
+
+        BirthdaysDTO weeklyBirthdays = employeeService.getWeeklyBirthdays();
+
+        assertNotNull(weeklyBirthdays);
+        assertEquals(1, weeklyBirthdays.getToday().size());
+        assertEquals(2, weeklyBirthdays.getNextWeek().size());
     }
 
     @Test

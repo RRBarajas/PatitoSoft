@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.EmployeesBirthdays;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, String> {
@@ -30,7 +31,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
     List<Employee> findByNameAndPosition(@Param("firstName") String firstName, @Param("lastName") String lastName,
         @Param("position") String position);
 
-    List<Employee> findByBirthDateBetween(LocalDate today, LocalDate nextWeek);
+    @Query(value = "SELECT e.email as email, "
+        + "concat(e.firstName, ' ', e.lastName) as name, "
+        + "e.birthDate as birthDate "
+        + "FROM Employee e "
+        + "WHERE e.deleteFlg = false "
+        + "AND e.birthDate between :today AND :nextWeek")
+    List<EmployeesBirthdays> findByBirthDateBetween(@Param("today") LocalDate today, @Param("nextWeek") LocalDate nextWeek);
 
     @Query(value = "SELECT e.email as email, e.gender as gender, "
         + "p.positionName as position, "

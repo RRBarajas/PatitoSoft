@@ -7,10 +7,11 @@ import java.util.List;
 
 import com.patitosoft.entity.Address;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmployeeForTotals;
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.entity.Position;
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.EmployeeForTotals;
+import com.patitosoft.projections.EmployeesBirthdays;
+import com.patitosoft.projections.SalariesPerPosition;
 
 public class EmployeeUtils {
 
@@ -69,6 +70,7 @@ public class EmployeeUtils {
     public static List<EmploymentHistory> getEmploymentHistoryList() {
         return List.of(getEmploymentHistory());
     }
+
     public static List<EmployeeForTotals> getEmployeeForTotals() {
         // To have good coverage, it is important that we have employees meeting the following criteria:
         // Regular employees with ACTIVE positions (employee1)
@@ -91,5 +93,12 @@ public class EmployeeUtils {
         SalariesPerPosition employee3 = new SalariesPerPositionImpl("Success Coach", 204.0, "third@email.com", Boolean.TRUE);
         SalariesPerPosition employee4 = new SalariesPerPositionImpl("Tester", 1234.56, "fourth@email.com", Boolean.FALSE);
         return List.of(employee1, employee2, employee3, employee4);
+    }
+
+    public static List<EmployeesBirthdays> getEmployeesBirthdays() {
+        EmployeesBirthdays birthday1 = new EmployeesBirthdaysImpl("name@email.com", "John Doe", LocalDate.now());
+        EmployeesBirthdays birthday2 = new EmployeesBirthdaysImpl("second@email.com", "Jane Doe", LocalDate.now().plusDays(4));
+        EmployeesBirthdays birthday3 = new EmployeesBirthdaysImpl("third@email.com", "Janine Doe", LocalDate.now().plusDays(6));
+        return List.of(birthday1, birthday2, birthday3);
     }
 }

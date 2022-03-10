@@ -1,23 +1,20 @@
 package com.patitosoft.service.utils;
 
-import com.patitosoft.entity.EmployeeForTotals;
+import com.patitosoft.projections.EmployeeForTotals;
 
-import lombok.Setter;
-
-@Setter
 public class EmployeeForTotalsImpl implements EmployeeForTotals {
 
-    private String email;
+    private final String email;
 
-    private Character gender;
+    private final Character gender;
 
-    private String position;
+    private final String position;
 
-    private String country;
+    private final String country;
 
-    private String state;
+    private final String state;
 
-    private Boolean current;
+    private final Boolean current;
 
     public EmployeeForTotalsImpl(String email, Character gender, String position, String country, String state, Boolean current) {
         this.email = email;

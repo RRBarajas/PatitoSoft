@@ -1,19 +1,16 @@
 package com.patitosoft.service.utils;
 
-import com.patitosoft.entity.SalariesPerPosition;
+import com.patitosoft.projections.SalariesPerPosition;
 
-import lombok.Setter;
-
-@Setter
 public class SalariesPerPositionImpl implements SalariesPerPosition {
 
-    private String position;
+    private final String position;
 
-    private Double salary;
+    private final Double salary;
 
-    private String email;
+    private final String email;
 
-    private Boolean current;
+    private final Boolean current;
 
     public SalariesPerPositionImpl(String position, Double salary, String email, Boolean current) {
         this.position = position;
