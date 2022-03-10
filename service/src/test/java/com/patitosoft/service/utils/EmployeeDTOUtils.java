@@ -27,7 +27,6 @@ public class EmployeeDTOUtils {
 
     public static EmployeeUpdateDTO getEmployeeUpdateDTO() {
         EmployeeUpdateDTO employee = new EmployeeUpdateDTO();
-        employee.setEmail("name@email.com");
         employee.setFirstName("Updated name");
         employee.setLastName("Second last name");
         employee.setGender('M');

@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
+import com.patitosoft.service.exception.EmployeeNotInactiveException;
 import com.patitosoft.service.exception.InvalidEmailException;
 import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
@@ -40,7 +41,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ MultipleCurrentPositionsException.class,
         InvalidEmailException.class,
-        InvalidPositionException.class })
+        InvalidPositionException.class,
+        EmployeeNotInactiveException.class })
     public ResponseEntity<Object> handleBadRequestException(RuntimeException exception, WebRequest request,
         HttpServletRequest httpRequest) {
         log.warn(exception.getMessage());

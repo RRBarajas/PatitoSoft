@@ -102,10 +102,10 @@ class EmployeeMapperTest {
     void employeeUpdateDTOToEmployee_ReturnEmployeeWithSomeNulls_IfValidDTO() {
         EmployeeUpdateDTO employeeUpdateDTO = EmployeeDTOUtils.getEmployeeUpdateDTO();
 
-        Employee employee = mapper.employeeUpdateDTOToEmployee(employeeUpdateDTO);
+        Employee employee = mapper.employeeUpdateDTOToEmployee(employeeUpdateDTO, employeeUpdateDTO.getContact(), "name@email.com");
 
         assertNotNull(employee);
-        assertEquals(employeeUpdateDTO.getEmail(), employee.getEmail());
+        assertEquals("name@email.com", employee.getEmail());
         assertEquals(employeeUpdateDTO.getFirstName(), employee.getFirstName());
         assertEquals(employeeUpdateDTO.getGender(), employee.getGender());
         assertEquals(employeeUpdateDTO.getContact().getBirthDate(), employee.getBirthDate().toString());
@@ -117,7 +117,6 @@ class EmployeeMapperTest {
         assertNull(employee.getEmploymentHistory());
         assertNull(employee.getDeleteFlg());
         assertNull(employee.getCreatedOn());
-        assertEquals(employeeUpdateDTO.getUpdatedOn(), employee.getUpdatedOn());
     }
 
     @Test

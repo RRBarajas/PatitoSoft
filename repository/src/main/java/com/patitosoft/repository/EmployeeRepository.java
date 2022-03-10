@@ -19,6 +19,8 @@ import com.patitosoft.projections.EmployeesBirthdays;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
+    boolean existsByEmailAndDeleteFlg(String email, Boolean deleteFlg);
+
     Optional<Employee> findByEmailAndDeleteFlgFalse(String email);
 
     @Query(value = "SELECT e FROM Employee e "

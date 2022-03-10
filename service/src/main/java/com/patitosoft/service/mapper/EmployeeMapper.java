@@ -18,6 +18,7 @@ import org.springframework.data.util.Pair;
 
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.BirthdaysDTO.BirthdayPair;
+import com.patitosoft.dto.EmployeeContactDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
@@ -57,10 +58,13 @@ public interface EmployeeMapper {
 
     default Employee extendedEmployeeDTOToEmployee(EmployeeDTO employeeDTO) {
         Employee employee = employeeDTOToEmployee(employeeDTO);
-        employee.getEmploymentHistory().forEach(e -> {
-            e.setEmployeeEmail(employee.getEmail());
-            e.setEmployee(employee);
-        });
+        employee.setEmail(employee.getEmail().toLowerCase());
+        if (employee.getEmploymentHistory() != null) {
+            employee.getEmploymentHistory().forEach(e -> {
+                e.setEmployeeEmail(employee.getEmail());
+                e.setEmployee(employee);
+            });
+        }
         return employee;
     }
 
@@ -78,27 +82,27 @@ public interface EmployeeMapper {
     EmploymentHistory positionDTOToEmploymentHistory(PositionDTO positionDTO);
 
     @Mappings({
-        @Mapping(source = "contact.birthDate", target = "birthDate", dateFormat = "yyyy-MM-dd"),
-        @Mapping(source = "contact", target = ".")
+        @Mapping(source = "c.birthDate", target = "birthDate", dateFormat = "yyyy-MM-dd"),
+        @Mapping(source = "c", target = ".")
     })
-    Employee employeeUpdateDTOToEmployee(EmployeeUpdateDTO update);
+    Employee employeeUpdateDTOToEmployee(EmployeeUpdateDTO u, EmployeeContactDTO c, String email);
 
     default EmployeeTotalsDTO employeeTotalsToEmployeeTotalsDTO(List<EmployeeForTotals> employeeForTotals,
-        Boolean gender, Boolean position, Boolean address) {
+        boolean groupByGender, boolean groupByPosition, boolean groupByAddress) {
         if (employeeForTotals == null) {
             return null;
         }
         EmployeeTotalsDTO employeeTotalsDTO = new EmployeeTotalsDTO();
         employeeTotalsDTO.setTotal(employeeForTotals.stream().map(EmployeeForTotals::getEmail).distinct().count());
 
-        if (gender.equals(Boolean.TRUE)) {
+        if (groupByGender) {
             // Group the distinct employees by gender
             Map<Character, Long> byGender = employeeForTotals.stream()
                 .map(e -> Pair.of(e.getGender(), e.getEmail())).distinct()
                 .collect(groupingBy(Pair::getFirst, counting()));
             employeeTotalsDTO.setGender(byGender);
         }
-        if (address.equals(Boolean.TRUE)) {
+        if (groupByAddress) {
             // Group the distinct employees by country and then by state
             Map<String, Map<String, Long>> byAddress = employeeForTotals.stream()
                 .map(e -> Pair.of(e.getCountry(), Pair.of(e.getState(), e.getEmail()))).distinct()
@@ -106,7 +110,7 @@ public interface EmployeeMapper {
                     groupingBy(c -> c.getSecond().getFirst(), counting())));
             employeeTotalsDTO.setAddress(byAddress);
         }
-        if (position.equals(Boolean.TRUE)) {
+        if (groupByPosition) {
             Map<String, Long> byPosition = new HashMap<>();
 
             // Get a map of positions that have at least one active employee

@@ -18,22 +18,22 @@ import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
 
-@FeignClient(path = "employees", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}", primary = false)
+@FeignClient(path = "employees/admin", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}", primary = false)
 public interface EmployeeAdminApi extends EmployeeApi {
 
-    @GetMapping(value = "/admin/{email}")
+    @GetMapping(value = "/{email}")
     EmployeeDTO getEmployeeForAdmin(@PathVariable("email") String email);
 
-    @GetMapping(value = "/admin")
+    @GetMapping(value = "/")
     List<EmployeeDTO> getEmployeesByCriteriaForAdmin(@RequestParam("firstName") String firstName,
         @RequestParam("lastName") String lastName,
         @RequestParam("position") String position,
         @RequestParam("exEmployees") Boolean exEmployees);
 
     @GetMapping(value = "/totals")
-    EmployeeTotalsDTO getEmployeeTotals(@RequestParam("byGender") Boolean gender,
-        @RequestParam("byPosition") Boolean position,
-        @RequestParam("byAddress") Boolean address);
+    EmployeeTotalsDTO getEmployeeTotals(@RequestParam("byGender") boolean gender,
+        @RequestParam("byPosition") boolean position,
+        @RequestParam("byAddress") boolean address);
 
     @GetMapping(value = "/position/salaries")
     List<PositionSalaryRangesDTO> getSalaryRangesPerPosition();

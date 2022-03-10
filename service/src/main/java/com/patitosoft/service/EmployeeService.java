@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.patitosoft.api.EmployeeAdminApi;
 import com.patitosoft.dto.BirthdaysDTO;
@@ -24,6 +25,7 @@ import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
+import com.patitosoft.service.exception.EmployeeNotInactiveException;
 import com.patitosoft.service.exception.InvalidEmailException;
 import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
@@ -48,13 +50,14 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Override
     public EmployeeDTO getEmployee(String email) {
-        Employee employee = repository.findByEmailAndDeleteFlgFalse(email).orElseThrow(() -> new EmployeeNotFoundException(email));
+        Employee employee =
+            repository.findByEmailAndDeleteFlgFalse(email.toLowerCase()).orElseThrow(() -> new EmployeeNotFoundException(email));
         return mapper.employeeToEmployeeDTO(employee);
     }
 
     @Override
     public EmployeeDTO getEmployeeForAdmin(String email) {
-        Employee employee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
+        Employee employee = repository.findById(email.toLowerCase()).orElseThrow(() -> new EmployeeNotFoundException(email));
         return mapper.employeeToEmployeeDTO(employee);
     }
 
@@ -74,7 +77,7 @@ public class EmployeeService implements EmployeeAdminApi {
     }
 
     @Override
-    public EmployeeTotalsDTO getEmployeeTotals(Boolean gender, Boolean position, Boolean address) {
+    public EmployeeTotalsDTO getEmployeeTotals(boolean gender, boolean position, boolean address) {
         List<EmployeeForTotals> totals = repository.findEmployeesForTotals();
         return mapper.employeeTotalsToEmployeeTotalsDTO(totals, gender, position, address);
     }
@@ -94,7 +97,7 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Override
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
-        if (repository.findById(employeeDTO.getEmail()).isPresent()) {
+        if (repository.existsById(employeeDTO.getEmail().toLowerCase())) {
             throw new EmployeeAlreadyExistsException(employeeDTO.getEmail());
         }
         validateSingleCurrentPosition(employeeDTO);
@@ -108,11 +111,9 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Override
     public EmployeeDTO updateEmployee(String email, EmployeeUpdateDTO employeeDTO) {
-        // TODO: We must determine what to do with NULLs, should they override the value or ignore them during update
-        validateEmployeeEmail(email, employeeDTO.getEmail());
-
-        Employee oldEmployee = repository.findById(email).orElseThrow(() -> new EmployeeNotFoundException(email));
-        Employee newEmployee = mapper.employeeUpdateDTOToEmployee(employeeDTO);
+        // TODO: We must determine what to do with NULLs, should they override the value or ignore them during update?
+        Employee oldEmployee = repository.findById(email.toLowerCase()).orElseThrow(() -> new EmployeeNotFoundException(email));
+        Employee newEmployee = mapper.employeeUpdateDTOToEmployee(employeeDTO, employeeDTO.getContact(), oldEmployee.getEmail());
 
         newEmployee.setEmploymentHistory(oldEmployee.getEmploymentHistory());
         newEmployee.setDeleteFlg(oldEmployee.getDeleteFlg());
@@ -126,7 +127,7 @@ public class EmployeeService implements EmployeeAdminApi {
     public EmployeeDTO replaceEmployee(String email, EmployeeDTO employeeDTO) {
         validateEmployeeEmail(email, employeeDTO.getEmail());
         validateSingleCurrentPosition(employeeDTO);
-        Optional<Employee> currEmployee = repository.findById(email);
+        Optional<Employee> currEmployee = repository.findById(email.toLowerCase());
 
         if (currEmployee.isPresent()) {
             employeeDTO.setCreatedOn(currEmployee.get().getCreatedOn());
@@ -139,11 +140,12 @@ public class EmployeeService implements EmployeeAdminApi {
         return mapper.employeeToEmployeeDTO(savedEmployee);
     }
 
+    @Transactional
     @Override
     public EmployeeDTO assignEmployeePosition(String email, Long position, PositionDTO positionDTO) {
+        validateEmployeeIsActive(email);
         validatePositionId(position, positionDTO);
-        getEmployeeForAdmin(email);
-        Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email);
+        Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email.toLowerCase());
 
         // TODO: Where is the atomicity? Right now, if the second save fails, the first does not get rolled back
         if (positionDTO.getCurrentPosition() && currentPosition.isPresent()) {
@@ -154,25 +156,38 @@ public class EmployeeService implements EmployeeAdminApi {
             positionDTO.setTo(null);
         }
         EmploymentHistory entity = mapper.positionDTOToEmploymentHistory(positionDTO);
-        entity.setEmployeeEmail(email);
-        historyRepository.save(entity);
+        entity.setEmployeeEmail(email.toLowerCase());
+        historyRepository.saveAndFlush(entity);
         return getEmployeeForAdmin(email);
     }
 
     @Override
     public void fireEmployee(String email) {
-        repository.fireOrHireEmployee(email, true, LocalDateTime.now());
+        validateEmployeeIsActive(email);
+        repository.fireOrHireEmployee(email.toLowerCase(), true, LocalDateTime.now());
     }
 
     @Override
     public EmployeeDTO reactivateEmployee(String email) {
-        // TODO: Validate that the employee exists before attempting the update
-        repository.fireOrHireEmployee(email, false, LocalDateTime.now());
+        validateEmployeeIsInactive(email);
+        repository.fireOrHireEmployee(email.toLowerCase(), false, LocalDateTime.now());
         return getEmployeeForAdmin(email);
     }
 
+    private void validateEmployeeIsActive(String email) {
+        if (!repository.existsByEmailAndDeleteFlg(email, Boolean.FALSE)) {
+            throw new EmployeeNotFoundException(email);
+        }
+    }
+
+    private void validateEmployeeIsInactive(String email) {
+        if (!repository.existsByEmailAndDeleteFlg(email, Boolean.TRUE)) {
+            throw new EmployeeNotInactiveException(email);
+        }
+    }
+
     private void validateEmployeeEmail(String oldEmail, String newEmail) {
-        if (!oldEmail.equals(newEmail)) {
+        if (!oldEmail.equalsIgnoreCase(newEmail)) {
             throw new InvalidEmailException();
         }
     }

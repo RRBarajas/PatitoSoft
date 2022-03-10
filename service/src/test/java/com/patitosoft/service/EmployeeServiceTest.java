@@ -26,7 +26,6 @@ import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
-import com.patitosoft.service.exception.InvalidEmailException;
 import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 import com.patitosoft.service.mapper.EmployeeMapper;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -183,9 +183,8 @@ class EmployeeServiceTest {
 
     @Test
     void createEmployee_ThrowException_IfEmployeeExists() {
-        Optional<Employee> completeEmployee = Optional.of(EmployeeUtils.getCompleteEmployee());
         EmployeeDTO employeeDTO = EmployeeDTOUtils.getEmployeeDTO();
-        when(employeeRepository.findById(any())).thenReturn(completeEmployee);
+        when(employeeRepository.existsById(any())).thenReturn(true);
 
         EmployeeAlreadyExistsException exception = assertThrows(
             EmployeeAlreadyExistsException.class,
@@ -198,7 +197,7 @@ class EmployeeServiceTest {
     void createEmployee_ThrowException_IfMultipleCurrentPositions() {
         EmployeeDTO employeeDTO = EmployeeDTOUtils.getEmployeeDTO();
         employeeDTO.setEmploymentHistory(EmployeeDTOUtils.getDuplicatedEmploymentHistory());
-        when(employeeRepository.findById(any())).thenReturn(Optional.empty());
+        when(employeeRepository.existsById(any())).thenReturn(false);
 
         MultipleCurrentPositionsException exception = assertThrows(
             MultipleCurrentPositionsException.class,
@@ -211,7 +210,7 @@ class EmployeeServiceTest {
     void createEmployee_ReturnDTO_IfValidEmployee() {
         EmployeeDTO employeeDTO = EmployeeDTOUtils.getEmployeeDTO();
         Employee employee = EmployeeUtils.getCompleteEmployee();
-        when(employeeRepository.findById(any())).thenReturn(Optional.empty());
+        when(employeeRepository.existsById(any())).thenReturn(false);
         when(employeeRepository.save(any())).thenReturn(employee);
 
         EmployeeDTO newEmployee = employeeService.createEmployee(employeeDTO);
@@ -220,17 +219,6 @@ class EmployeeServiceTest {
         assertFalse(newEmployee.getExEmployee());
         assertTrue(LocalDateTime.now().isAfter(newEmployee.getCreatedOn()));
         assertNull(newEmployee.getUpdatedOn());
-    }
-
-    @Test
-    void updateEmployee_ThrowException_IfEmailsDiffer() {
-        EmployeeUpdateDTO employeeUpdateDTO = EmployeeDTOUtils.getEmployeeUpdateDTO();
-
-        InvalidEmailException exception = assertThrows(
-            InvalidEmailException.class,
-            () -> employeeService.updateEmployee("other@email.com", employeeUpdateDTO)
-        );
-        assertEquals("Email must not differ from the passed parameter and the object", exception.getMessage());
     }
 
     @Test
@@ -291,8 +279,21 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void assignEmployeePosition_ThrowException_IfEmployeeDoesNotExist() {
+        PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(false);
+
+        EmployeeNotFoundException exception = assertThrows(
+            EmployeeNotFoundException.class,
+            () -> employeeService.assignEmployeePosition("name@email.com", 2L, positionDTO)
+        );
+        assertEquals("Employee 'name@email.com' does not exist", exception.getMessage());
+    }
+
+    @Test
     void assignEmployeePosition_ThrowException_IfPositionsDiffer() {
         PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
 
         InvalidPositionException exception = assertThrows(
             InvalidPositionException.class,
@@ -306,25 +307,29 @@ class EmployeeServiceTest {
         Optional<Employee> oldEmployee = Optional.of(EmployeeUtils.getCompleteEmployee());
         Optional<EmploymentHistory> employmentHistory = Optional.of(EmployeeUtils.getEmploymentHistory());
         PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
         when(employeeRepository.findById(any())).thenReturn(oldEmployee);
         when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(employmentHistory);
 
         employeeService.assignEmployeePosition("name@email.com", positionDTO.getPositionId(), positionDTO);
 
+        verify(employeeRepository, times(1)).existsByEmailAndDeleteFlg(any(), anyBoolean());
+        verify(employeeRepository, times(1)).findById(any());
         verify(historyRepository, times(2)).save(any());
-        verify(employeeRepository, times(2)).findById(any());
     }
 
     @Test
     void assignEmployeePosition_SaveOnce_IfNoCurrentPosition() {
         Optional<Employee> oldEmployee = Optional.of(EmployeeUtils.getCompleteEmployee());
         PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
         when(employeeRepository.findById(any())).thenReturn(oldEmployee);
         when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(Optional.empty());
 
         employeeService.assignEmployeePosition("name@email.com", positionDTO.getPositionId(), positionDTO);
 
+        verify(employeeRepository, times(1)).existsByEmailAndDeleteFlg(any(), anyBoolean());
+        verify(employeeRepository, times(1)).findById(any());
         verify(historyRepository, times(1)).save(any());
-        verify(employeeRepository, times(2)).findById(any());
     }
 }
