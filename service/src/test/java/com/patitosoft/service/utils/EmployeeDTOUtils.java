@@ -8,7 +8,7 @@ import com.patitosoft.dto.AddressDTO;
 import com.patitosoft.dto.EmployeeContactDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.dto.EmploymentDTO;
 
 public class EmployeeDTOUtils {
 
@@ -50,16 +50,16 @@ public class EmployeeDTOUtils {
         return address;
     }
 
-    public static List<PositionDTO> getEmploymentHistory() {
-        return List.of(getPositionDTO());
+    public static List<EmploymentDTO> getEmploymentHistory() {
+        return List.of(getEmploymentDTO());
     }
 
-    public static List<PositionDTO> getDuplicatedEmploymentHistory() {
-        return List.of(getPositionDTO(), getPositionDTO());
+    public static List<EmploymentDTO> getDuplicatedEmploymentHistory() {
+        return List.of(getEmploymentDTO(), getEmploymentDTO());
     }
 
-    public static PositionDTO getPositionDTO() {
-        PositionDTO position = new PositionDTO();
+    public static EmploymentDTO getEmploymentDTO() {
+        EmploymentDTO position = new EmploymentDTO();
         position.setPositionId(1L);
         position.setPositionName("Position");
         position.setSalary(100D);

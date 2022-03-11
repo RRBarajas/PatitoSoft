@@ -21,8 +21,7 @@ import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.views.UserType;
 
 @RestController
@@ -80,11 +79,6 @@ public class EmployeeController {
         return employeeApi.getEmployeeTotals(gender, position, address);
     }
 
-    @GetMapping(value = "/admin/position/salaries")
-    public List<PositionSalaryRangesDTO> getSalaryRangesPerPosition() {
-        return employeeApi.getSalaryRangesPerPosition();
-    }
-
     @PostMapping(value = "/admin")
     public EmployeeDTO createEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
         return employeeApi.createEmployee(employeeDTO);
@@ -102,8 +96,8 @@ public class EmployeeController {
 
     @PatchMapping("/admin/{email}/position/{position}")
     public EmployeeDTO assignEmployeePosition(@PathVariable String email, @PathVariable Long position,
-        @RequestBody @Valid PositionDTO positionDTO) {
-        return employeeApi.assignEmployeePosition(email, position, positionDTO);
+        @RequestBody @Valid EmploymentDTO employmentDTO) {
+        return employeeApi.assignEmployeePosition(email, position, employmentDTO);
     }
 
     @DeleteMapping("/admin/{email}")

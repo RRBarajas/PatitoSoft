@@ -11,7 +11,6 @@ import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.entity.Position;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
-import com.patitosoft.projections.SalariesPerPosition;
 
 public class EmployeeUtils {
 
@@ -85,14 +84,6 @@ public class EmployeeUtils {
         EmployeeForTotals employee5 = new EmployeeForTotalsImpl("unknowm@role.com", 'M', null, "Mexico", "Jalisco", null);
         EmployeeForTotals employee6 = new EmployeeForTotalsImpl("noreply@role.com", 'M', "Tester", "Mexico", "Jalisco", Boolean.FALSE);
         return List.of(employee1, employee2, employee3, employee4, employee5, employee6);
-    }
-
-    public static List<SalariesPerPosition> getSalariesPerPosition() {
-        SalariesPerPosition employee1 = new SalariesPerPositionImpl("Developer", 10.5, "name@email.com", Boolean.TRUE);
-        SalariesPerPosition employee2 = new SalariesPerPositionImpl("Success Coach", 204D, "second@email.com", Boolean.TRUE);
-        SalariesPerPosition employee3 = new SalariesPerPositionImpl("Success Coach", 204.0, "third@email.com", Boolean.TRUE);
-        SalariesPerPosition employee4 = new SalariesPerPositionImpl("Tester", 1234.56, "fourth@email.com", Boolean.FALSE);
-        return List.of(employee1, employee2, employee3, employee4);
     }
 
     public static List<EmployeesBirthdays> getEmployeesBirthdays() {

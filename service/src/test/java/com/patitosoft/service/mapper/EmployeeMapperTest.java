@@ -1,7 +1,5 @@
 package com.patitosoft.service.mapper;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -9,10 +7,8 @@ import org.junit.jupiter.api.Test;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.projections.EmployeeForTotals;
-import com.patitosoft.projections.SalariesPerPosition;
 import com.patitosoft.service.utils.EmployeeDTOUtils;
 import com.patitosoft.service.utils.EmployeeUtils;
 
@@ -209,30 +205,4 @@ class EmployeeMapperTest {
         assertEquals(2, employeeTotalsDTO.getAddress().get("USA").get("California"));
         assertEquals(4, employeeTotalsDTO.getAddress().get("Mexico").get("Jalisco"));
     }
-
-    @Test
-    void salariesPerPositionToDTO_ReturnEmptyList_IfNoPositions() {
-        List<PositionSalaryRangesDTO> positions = mapper.salariesPerPositionToDTO(Collections.emptyList());
-
-        assertNotNull(positions);
-        assertEquals(0, positions.size());
-    }
-
-    @Test
-    void salariesPerPositionToDTO_ReturnList_IfPositionWithOrWithoutEmployees() {
-        List<SalariesPerPosition> salariesPerPosition = EmployeeUtils.getSalariesPerPosition();
-
-        List<PositionSalaryRangesDTO> positions = mapper.salariesPerPositionToDTO(salariesPerPosition);
-        // We sort it to make assertions by index, since the current mapper does not have sorting logic
-        positions.sort(Comparator.comparing(PositionSalaryRangesDTO::getPosition));
-
-        assertNotNull(positions);
-        assertEquals(3, positions.size());
-        assertEquals(1, positions.get(0).getSalaries().size());
-        assertEquals(2L, positions.get(1).getSalaries().get(204.0));
-
-        assertEquals("Tester", positions.get(2).getPosition());
-        assertNull(positions.get(2).getSalaries());
-    }
-
 }

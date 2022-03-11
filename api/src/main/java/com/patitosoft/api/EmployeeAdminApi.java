@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.dto.EmploymentDTO;
 
 @FeignClient(path = "employees/admin", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}", primary = false)
 public interface EmployeeAdminApi extends EmployeeApi {
@@ -35,9 +34,6 @@ public interface EmployeeAdminApi extends EmployeeApi {
         @RequestParam("byPosition") boolean position,
         @RequestParam("byAddress") boolean address);
 
-    @GetMapping(value = "/position/salaries")
-    List<PositionSalaryRangesDTO> getSalaryRangesPerPosition();
-
     @PostMapping
     EmployeeDTO createEmployee(@RequestBody EmployeeDTO employeeDTO);
 
@@ -52,7 +48,7 @@ public interface EmployeeAdminApi extends EmployeeApi {
     @PatchMapping("/{email}/position/{position}")
     EmployeeDTO assignEmployeePosition(@PathVariable("email") String email,
         @PathVariable("position") Long position,
-        @RequestBody PositionDTO positionDTO);
+        @RequestBody EmploymentDTO employmentDTO);
 
     @DeleteMapping("/{email}")
     void fireEmployee(@PathVariable("email") String email);

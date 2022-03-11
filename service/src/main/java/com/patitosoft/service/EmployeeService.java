@@ -14,13 +14,11 @@ import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
-import com.patitosoft.projections.SalariesPerPosition;
 import com.patitosoft.repository.EmployeeRepository;
 import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
@@ -83,12 +81,6 @@ public class EmployeeService implements EmployeeAdminApi {
     }
 
     @Override
-    public List<PositionSalaryRangesDTO> getSalaryRangesPerPosition() {
-        List<SalariesPerPosition> salaryRangesByPosition = historyRepository.findSalaryRangesByPosition();
-        return mapper.salariesPerPositionToDTO(salaryRangesByPosition);
-    }
-
-    @Override
     public BirthdaysDTO getWeeklyBirthdays() {
         LocalDate today = LocalDate.now();
         List<EmployeesBirthdays> birthdays = repository.findByBirthDateBetween(today, today.plusDays(7));
@@ -142,20 +134,20 @@ public class EmployeeService implements EmployeeAdminApi {
 
     @Transactional
     @Override
-    public EmployeeDTO assignEmployeePosition(String email, Long position, PositionDTO positionDTO) {
+    public EmployeeDTO assignEmployeePosition(String email, Long position, EmploymentDTO employmentDTO) {
         validateEmployeeIsActive(email);
-        validatePositionId(position, positionDTO);
+        validatePositionId(position, employmentDTO);
         Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email.toLowerCase());
 
         // TODO: Where is the atomicity? Right now, if the second save fails, the first does not get rolled back
-        if (positionDTO.getCurrentPosition() && currentPosition.isPresent()) {
+        if (employmentDTO.getCurrentPosition() && currentPosition.isPresent()) {
             EmploymentHistory oldPosition = currentPosition.get();
             oldPosition.setCurrent(Boolean.FALSE);
             oldPosition.setTo(LocalDateTime.now());
             historyRepository.save(oldPosition);
-            positionDTO.setTo(null);
+            employmentDTO.setTo(null);
         }
-        EmploymentHistory entity = mapper.positionDTOToEmploymentHistory(positionDTO);
+        EmploymentHistory entity = mapper.employmentDTOToEmploymentHistory(employmentDTO);
         entity.setEmployeeEmail(email.toLowerCase());
         historyRepository.saveAndFlush(entity);
         return getEmployeeForAdmin(email);
@@ -194,15 +186,15 @@ public class EmployeeService implements EmployeeAdminApi {
 
     private void validateSingleCurrentPosition(EmployeeDTO employeeDTO) {
         if (employeeDTO.getEmploymentHistory() != null) {
-            long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(PositionDTO::getCurrentPosition).count();
+            long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(EmploymentDTO::getCurrentPosition).count();
             if (currentPositions > 1) {
                 throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
             }
         }
     }
 
-    private void validatePositionId(Long position, PositionDTO positionDTO) {
-        if (!position.equals(positionDTO.getPositionId())) {
+    private void validatePositionId(Long position, EmploymentDTO employmentDTO) {
+        if (!position.equals(employmentDTO.getPositionId())) {
             throw new InvalidPositionException();
         }
     }

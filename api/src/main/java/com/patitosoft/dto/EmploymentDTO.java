@@ -1,9 +1,7 @@
 package com.patitosoft.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -19,36 +17,25 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmployeeDTO {
-
-    @Email
-    @NotNull
-    @JsonView(value = UserType.Basic.class)
-    private String email;
+public class EmploymentDTO {
 
     @NotNull
-    @JsonView(value = UserType.Basic.class)
-    private String firstName;
+    private Long positionId;
 
     @NotNull
     @JsonView(value = UserType.Basic.class)
-    private String lastName;
+    private String positionName;
 
     @NotNull
-    private Character gender;
-
-    @NotNull
-    private EmployeeContactDTO contact;
-
-    @JsonView(value = UserType.Basic.class)
-    private List<EmploymentDTO> employmentHistory;
-
-    private Boolean exEmployee;
+    private Double salary;
 
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @NotNull
-    private LocalDateTime createdOn;
+    private LocalDateTime from;
 
     @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime updatedOn;
+    private LocalDateTime to;
+
+    @JsonView(value = UserType.Basic.class)
+    private Boolean currentPosition;
 }

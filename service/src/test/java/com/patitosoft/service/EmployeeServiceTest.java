@@ -16,8 +16,7 @@ import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.projections.EmployeeForTotals;
@@ -148,16 +147,6 @@ class EmployeeServiceTest {
     }
 
     @Test
-    void getSalaryRangesPerPosition_ReturnEmptyList_IfNoPositions() {
-        when(historyRepository.findSalaryRangesByPosition()).thenReturn(Collections.emptyList());
-
-        List<PositionSalaryRangesDTO> positions = employeeService.getSalaryRangesPerPosition();
-
-        assertNotNull(positions);
-        assertEquals(0, positions.size());
-    }
-
-    @Test
     void getWeeklyBirthdays_ReturnEmptyLists_IfNoBirthdays() {
         List<EmployeesBirthdays> employeesList = Collections.emptyList();
         when(employeeRepository.findByBirthDateBetween(any(), any())).thenReturn(employeesList);
@@ -280,24 +269,24 @@ class EmployeeServiceTest {
 
     @Test
     void assignEmployeePosition_ThrowException_IfEmployeeDoesNotExist() {
-        PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        EmploymentDTO employmentDTO = EmployeeDTOUtils.getEmploymentDTO();
         when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(false);
 
         EmployeeNotFoundException exception = assertThrows(
             EmployeeNotFoundException.class,
-            () -> employeeService.assignEmployeePosition("name@email.com", 2L, positionDTO)
+            () -> employeeService.assignEmployeePosition("name@email.com", 2L, employmentDTO)
         );
         assertEquals("Employee 'name@email.com' does not exist", exception.getMessage());
     }
 
     @Test
     void assignEmployeePosition_ThrowException_IfPositionsDiffer() {
-        PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        EmploymentDTO employmentDTO = EmployeeDTOUtils.getEmploymentDTO();
         when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
 
         InvalidPositionException exception = assertThrows(
             InvalidPositionException.class,
-            () -> employeeService.assignEmployeePosition("name@email.com", 2L, positionDTO)
+            () -> employeeService.assignEmployeePosition("name@email.com", 2L, employmentDTO)
         );
         assertEquals("Position must be the same in the passed parameter and the object", exception.getMessage());
     }
@@ -306,30 +295,31 @@ class EmployeeServiceTest {
     void assignEmployeePosition_SaveTwice_IfValidPosition() {
         Optional<Employee> oldEmployee = Optional.of(EmployeeUtils.getCompleteEmployee());
         Optional<EmploymentHistory> employmentHistory = Optional.of(EmployeeUtils.getEmploymentHistory());
-        PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        EmploymentDTO employmentDTO = EmployeeDTOUtils.getEmploymentDTO();
         when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
         when(employeeRepository.findById(any())).thenReturn(oldEmployee);
         when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(employmentHistory);
 
-        employeeService.assignEmployeePosition("name@email.com", positionDTO.getPositionId(), positionDTO);
+        employeeService.assignEmployeePosition("name@email.com", employmentDTO.getPositionId(), employmentDTO);
 
         verify(employeeRepository, times(1)).existsByEmailAndDeleteFlg(any(), anyBoolean());
         verify(employeeRepository, times(1)).findById(any());
-        verify(historyRepository, times(2)).save(any());
+        verify(historyRepository, times(1)).save(any());
+        verify(historyRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
     void assignEmployeePosition_SaveOnce_IfNoCurrentPosition() {
         Optional<Employee> oldEmployee = Optional.of(EmployeeUtils.getCompleteEmployee());
-        PositionDTO positionDTO = EmployeeDTOUtils.getPositionDTO();
+        EmploymentDTO employmentDTO = EmployeeDTOUtils.getEmploymentDTO();
         when(employeeRepository.existsByEmailAndDeleteFlg(any(), anyBoolean())).thenReturn(true);
         when(employeeRepository.findById(any())).thenReturn(oldEmployee);
         when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(Optional.empty());
 
-        employeeService.assignEmployeePosition("name@email.com", positionDTO.getPositionId(), positionDTO);
+        employeeService.assignEmployeePosition("name@email.com", employmentDTO.getPositionId(), employmentDTO);
 
         verify(employeeRepository, times(1)).existsByEmailAndDeleteFlg(any(), anyBoolean());
         verify(employeeRepository, times(1)).findById(any());
-        verify(historyRepository, times(1)).save(any());
+        verify(historyRepository, times(1)).saveAndFlush(any());
     }
 }

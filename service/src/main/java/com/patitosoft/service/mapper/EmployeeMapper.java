@@ -1,14 +1,12 @@
 package com.patitosoft.service.mapper;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,13 +20,11 @@ import com.patitosoft.dto.EmployeeContactDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.PositionDTO;
-import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
-import com.patitosoft.projections.SalariesPerPosition;
 
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.counting;
@@ -52,7 +48,7 @@ public interface EmployeeMapper {
         @Mapping(source = "position", target = "."),
         @Mapping(source = "current", target = "currentPosition")
     })
-    PositionDTO employmentHistoryToPositionDTO(EmploymentHistory employmentHistory);
+    EmploymentDTO employmentHistoryToEmploymentDTO(EmploymentHistory employmentHistory);
 
     List<EmployeeDTO> employeesToEmployeeDTOs(List<Employee> employee);
 
@@ -79,7 +75,7 @@ public interface EmployeeMapper {
         @Mapping(source = ".", target = "position"),
         @Mapping(source = "currentPosition", target = "current")
     })
-    EmploymentHistory positionDTOToEmploymentHistory(PositionDTO positionDTO);
+    EmploymentHistory employmentDTOToEmploymentHistory(EmploymentDTO employmentDTO);
 
     @Mappings({
         @Mapping(source = "c.birthDate", target = "birthDate", dateFormat = "yyyy-MM-dd"),
@@ -138,26 +134,6 @@ public interface EmployeeMapper {
             employeeTotalsDTO.setPosition(byPosition);
         }
         return employeeTotalsDTO;
-    }
-
-    default List<PositionSalaryRangesDTO> salariesPerPositionToDTO(List<SalariesPerPosition> salariesPerPosition) {
-        if (salariesPerPosition == null) {
-            return null;
-        }
-        List<PositionSalaryRangesDTO> positionSalaryRangesDTO = new ArrayList<>();
-
-        Map<String, Map<Double, Long>> activePositions = salariesPerPosition.stream()
-            .filter(p -> nonNull(p.getCurrent()) && p.getCurrent()).collect(
-                groupingBy(SalariesPerPosition::getPosition,
-                    groupingBy(SalariesPerPosition::getSalary, counting())));
-        activePositions.forEach((k, v) -> positionSalaryRangesDTO.add(new PositionSalaryRangesDTO(k, v)));
-
-        Stream<String> inactivePositions = salariesPerPosition.stream()
-            .map(SalariesPerPosition::getPosition)
-            .filter(position -> !activePositions.containsKey(position)).distinct();
-        inactivePositions.forEach(p -> positionSalaryRangesDTO.add(new PositionSalaryRangesDTO(p, null)));
-
-        return positionSalaryRangesDTO;
     }
 
     default BirthdaysDTO employeesBirthDaysToDTO(List<EmployeesBirthdays> employees, LocalDate filterDate) {

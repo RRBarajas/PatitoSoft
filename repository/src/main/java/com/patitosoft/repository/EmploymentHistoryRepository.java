@@ -14,6 +14,8 @@ import com.patitosoft.projections.SalariesPerPosition;
 @Repository
 public interface EmploymentHistoryRepository extends JpaRepository<EmploymentHistory, EmploymentHistoryKey> {
 
+    boolean existsByPositionId(Long positionId);
+
     Optional<EmploymentHistory> findByEmployeeEmailAndCurrentTrue(String email);
 
     @Query(value = "SELECT p.positionName as position, ep.salary as salary, "

@@ -15,6 +15,9 @@ import com.patitosoft.service.exception.EmployeeNotInactiveException;
 import com.patitosoft.service.exception.InvalidEmailException;
 import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
+import com.patitosoft.service.exception.PositionAlreadyExistsException;
+import com.patitosoft.service.exception.PositionAlreadyMappedException;
+import com.patitosoft.service.exception.PositionNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,13 +30,16 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Slf4j
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({ EmployeeNotFoundException.class })
+    @ExceptionHandler({ EmployeeNotFoundException.class,
+        PositionNotFoundException.class })
     public ResponseEntity<Object> handleNotFoundException(RuntimeException exception, WebRequest request, HttpServletRequest httpRequest) {
         log.warn(exception.getMessage());
         return handleExceptionInternal(exception, buildResponse(exception, httpRequest), new HttpHeaders(), NOT_FOUND, request);
     }
 
-    @ExceptionHandler({ EmployeeAlreadyExistsException.class })
+    @ExceptionHandler({ EmployeeAlreadyExistsException.class,
+        PositionAlreadyExistsException.class,
+        PositionAlreadyMappedException.class })
     public ResponseEntity<Object> handleConflictException(RuntimeException exception, WebRequest request, HttpServletRequest httpRequest) {
         log.warn(exception.getMessage());
         return handleExceptionInternal(exception, buildResponse(exception, httpRequest), new HttpHeaders(), CONFLICT, request);
