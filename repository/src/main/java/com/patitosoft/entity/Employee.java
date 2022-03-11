@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.PERSIST;
 import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.NotFoundAction.IGNORE;
 
@@ -44,7 +45,7 @@ public class Employee {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(mappedBy = "employee", cascade = ALL)
+    @OneToMany(mappedBy = "employee", cascade = PERSIST)
     @NotFound(action = IGNORE)
     private List<EmploymentHistory> employmentHistory;
 

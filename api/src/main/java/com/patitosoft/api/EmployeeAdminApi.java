@@ -17,8 +17,8 @@ import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.EmploymentDTO;
 
-@FeignClient(path = "employees/admin", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}", primary = false)
-public interface EmployeeAdminApi extends EmployeeApi {
+@FeignClient(path = "admin/employees", name = "${feign.employee-admin-api.name}", url = "${feign.employee-api.url}")
+public interface EmployeeAdminApi {
 
     @GetMapping(value = "/{email}")
     EmployeeDTO getEmployeeForAdmin(@PathVariable("email") String email);
@@ -45,9 +45,8 @@ public interface EmployeeAdminApi extends EmployeeApi {
     EmployeeDTO replaceEmployee(@PathVariable("email") String email,
         @RequestBody EmployeeDTO employeeDTO);
 
-    @PatchMapping("/{email}/position/{position}")
+    @PostMapping("/{email}/position")
     EmployeeDTO assignEmployeePosition(@PathVariable("email") String email,
-        @PathVariable("position") Long position,
         @RequestBody EmploymentDTO employmentDTO);
 
     @DeleteMapping("/{email}")

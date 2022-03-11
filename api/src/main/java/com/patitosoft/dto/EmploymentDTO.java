@@ -22,7 +22,6 @@ public class EmploymentDTO {
     @NotNull
     private Long positionId;
 
-    @NotNull
     @JsonView(value = UserType.Basic.class)
     private String positionName;
 
@@ -37,5 +36,5 @@ public class EmploymentDTO {
     private LocalDateTime to;
 
     @JsonView(value = UserType.Basic.class)
-    private Boolean currentPosition;
+    private boolean currentPosition;
 }

@@ -3,6 +3,10 @@ package com.patitosoft.service.mapper;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
@@ -16,9 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@ExtendWith(MockitoExtension.class)
 class EmployeeMapperTest {
 
-    EmployeeMapper mapper = EmployeeMapper.INSTANCE;
+    @Spy
+    private PositionMapper positionMapper = PositionMapper.INSTANCE;
+
+    @InjectMocks
+    private EmployeeMapper mapper = EmployeeMapper.INSTANCE;
 
     @Test
     void employeeToEmployeeDTO_ReturnDTO_IfValidEmployee() {
@@ -44,7 +53,7 @@ class EmployeeMapperTest {
         assertEquals(employee.getEmploymentHistory().get(0).getSalary(), employeeDTO.getEmploymentHistory().get(0).getSalary());
         assertEquals(employee.getEmploymentHistory().get(0).getFrom(), employeeDTO.getEmploymentHistory().get(0).getFrom());
         assertNull(employeeDTO.getEmploymentHistory().get(0).getTo());
-        assertEquals(employee.getEmploymentHistory().get(0).getCurrent(), employeeDTO.getEmploymentHistory().get(0).getCurrentPosition());
+        assertEquals(employee.getEmploymentHistory().get(0).getCurrent(), employeeDTO.getEmploymentHistory().get(0).isCurrentPosition());
 
         assertEquals(employee.getDeleteFlg(), employeeDTO.getExEmployee());
         assertEquals(employee.getCreatedOn(), employeeDTO.getCreatedOn());
@@ -87,7 +96,7 @@ class EmployeeMapperTest {
         assertEquals(employeeDTO.getEmploymentHistory().get(0).getSalary(), employee.getEmploymentHistory().get(0).getSalary());
         assertEquals(employeeDTO.getEmploymentHistory().get(0).getFrom(), employee.getEmploymentHistory().get(0).getFrom());
         assertNull(employeeDTO.getEmploymentHistory().get(0).getTo());
-        assertEquals(employeeDTO.getEmploymentHistory().get(0).getCurrentPosition(), employee.getEmploymentHistory().get(0).getCurrent());
+        assertEquals(employeeDTO.getEmploymentHistory().get(0).isCurrentPosition(), employee.getEmploymentHistory().get(0).getCurrent());
 
         assertEquals(employeeDTO.getExEmployee(), employee.getDeleteFlg());
         assertEquals(employeeDTO.getCreatedOn(), employee.getCreatedOn());

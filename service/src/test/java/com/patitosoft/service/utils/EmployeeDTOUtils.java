@@ -2,13 +2,13 @@ package com.patitosoft.service.utils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.patitosoft.dto.AddressDTO;
 import com.patitosoft.dto.EmployeeContactDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.EmploymentDTO;
+
+import static com.patitosoft.service.utils.PositionUtils.getEmploymentListDTO;
 
 public class EmployeeDTOUtils {
 
@@ -19,7 +19,7 @@ public class EmployeeDTOUtils {
         employee.setLastName("Last name");
         employee.setGender('M');
         employee.setContact(getEmployeeContactDTO());
-        employee.setEmploymentHistory(getEmploymentHistory());
+        employee.setEmploymentHistory(getEmploymentListDTO());
         employee.setExEmployee(Boolean.FALSE);
         employee.setCreatedOn(LocalDateTime.now());
         return employee;
@@ -50,21 +50,4 @@ public class EmployeeDTOUtils {
         return address;
     }
 
-    public static List<EmploymentDTO> getEmploymentHistory() {
-        return List.of(getEmploymentDTO());
-    }
-
-    public static List<EmploymentDTO> getDuplicatedEmploymentHistory() {
-        return List.of(getEmploymentDTO(), getEmploymentDTO());
-    }
-
-    public static EmploymentDTO getEmploymentDTO() {
-        EmploymentDTO position = new EmploymentDTO();
-        position.setPositionId(1L);
-        position.setPositionName("Position");
-        position.setSalary(100D);
-        position.setFrom(LocalDateTime.now());
-        position.setCurrentPosition(Boolean.TRUE);
-        return position;
-    }
 }

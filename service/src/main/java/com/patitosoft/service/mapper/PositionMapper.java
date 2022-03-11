@@ -7,10 +7,14 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
 
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.dto.PositionSalaryRangesDTO;
+import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.entity.Position;
 import com.patitosoft.projections.SalariesPerPosition;
 
@@ -28,6 +32,18 @@ public interface PositionMapper {
     List<PositionDTO> positionsToPositionDTOs(List<Position> position);
 
     Position positionDTOToPosition(PositionDTO positionDTO);
+
+    @Mappings({
+        @Mapping(source = "position", target = "."),
+        @Mapping(source = "current", target = "currentPosition")
+    })
+    EmploymentDTO employmentHistoryToEmploymentDTO(EmploymentHistory employmentHistory);
+
+    @Mappings({
+        @Mapping(source = ".", target = "position"),
+        @Mapping(source = "currentPosition", target = "current")
+    })
+    EmploymentHistory employmentDTOToEmploymentHistory(EmploymentDTO employmentDTO);
 
     default List<PositionSalaryRangesDTO> salariesPerPositionToDTO(List<SalariesPerPosition> salariesPerPosition) {
         if (salariesPerPosition == null) {

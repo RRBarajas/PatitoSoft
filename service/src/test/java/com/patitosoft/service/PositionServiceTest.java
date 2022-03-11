@@ -9,13 +9,17 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.dto.PositionDTO;
+import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.entity.Position;
+import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.repository.PositionRepository;
 import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.PositionAlreadyExistsException;
 import com.patitosoft.service.exception.PositionNotFoundException;
 import com.patitosoft.service.mapper.PositionMapper;
+import com.patitosoft.service.utils.EmployeeUtils;
 import com.patitosoft.service.utils.PositionUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +36,9 @@ class PositionServiceTest {
 
     @Mock
     private PositionRepository positionRepository;
+
+    @Mock
+    private EmploymentHistoryRepository historyRepository;
 
     @Spy
     private PositionMapper mapper = PositionMapper.INSTANCE;
@@ -131,5 +140,43 @@ class PositionServiceTest {
             () -> positionService.deletePosition(1L)
         );
         assertEquals("Position '1' does not exist", exception.getMessage());
+    }
+
+    @Test
+    void assignEmployeePosition_ThrowException_IfPositionDoesNotExist() {
+        EmploymentDTO employmentDTO = PositionUtils.getEmploymentDTO();
+        when(positionRepository.existsById(anyLong())).thenReturn(false);
+
+        PositionNotFoundException exception = assertThrows(
+            PositionNotFoundException.class,
+            () -> positionService.assignEmployeePosition("name@email.com", employmentDTO)
+        );
+        assertEquals("Position '1' does not exist", exception.getMessage());
+    }
+
+    @Test
+    void assignEmployeePosition_SaveTwice_IfValidPosition() {
+        Optional<EmploymentHistory> employmentHistory = Optional.of(EmployeeUtils.getEmploymentHistory());
+        EmploymentDTO employmentDTO = PositionUtils.getEmploymentDTO();
+        when(positionRepository.existsById(anyLong())).thenReturn(true);
+        when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(employmentHistory);
+
+        positionService.assignEmployeePosition("name@email.com", employmentDTO);
+
+        verify(positionRepository, times(1)).existsById(anyLong());
+        verify(historyRepository, times(1)).save(any());
+        verify(historyRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    void assignEmployeePosition_SaveOnce_IfNoCurrentPosition() {
+        EmploymentDTO employmentDTO = PositionUtils.getEmploymentDTO();
+        when(positionRepository.existsById(anyLong())).thenReturn(true);
+        when(historyRepository.findByEmployeeEmailAndCurrentTrue(any())).thenReturn(Optional.empty());
+
+        positionService.assignEmployeePosition("name@email.com", employmentDTO);
+
+        verify(positionRepository, times(1)).existsById(anyLong());
+        verify(historyRepository, times(1)).saveAndFlush(any());
     }
 }

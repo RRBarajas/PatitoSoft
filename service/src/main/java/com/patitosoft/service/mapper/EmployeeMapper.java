@@ -20,9 +20,7 @@ import com.patitosoft.dto.EmployeeContactDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
 
@@ -32,7 +30,8 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+    uses = { PositionMapper.class })
 public interface EmployeeMapper {
 
     // TODO: This INSTANCE is not needed since we already have the Mapper, but it "helps" for the tests, validate other options
@@ -43,12 +42,6 @@ public interface EmployeeMapper {
         @Mapping(source = ".", target = "contact")
     })
     EmployeeDTO employeeToEmployeeDTO(Employee employee);
-
-    @Mappings({
-        @Mapping(source = "position", target = "."),
-        @Mapping(source = "current", target = "currentPosition")
-    })
-    EmploymentDTO employmentHistoryToEmploymentDTO(EmploymentHistory employmentHistory);
 
     List<EmployeeDTO> employeesToEmployeeDTOs(List<Employee> employee);
 
@@ -70,12 +63,6 @@ public interface EmployeeMapper {
         @Mapping(source = "contact", target = ".")
     })
     Employee employeeDTOToEmployee(EmployeeDTO employeeDTO);
-
-    @Mappings({
-        @Mapping(source = ".", target = "position"),
-        @Mapping(source = "currentPosition", target = "current")
-    })
-    EmploymentHistory employmentDTOToEmploymentHistory(EmploymentDTO employmentDTO);
 
     @Mappings({
         @Mapping(source = "c.birthDate", target = "birthDate", dateFormat = "yyyy-MM-dd"),

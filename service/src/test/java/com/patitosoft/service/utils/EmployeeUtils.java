@@ -8,9 +8,10 @@ import java.util.List;
 import com.patitosoft.entity.Address;
 import com.patitosoft.entity.Employee;
 import com.patitosoft.entity.EmploymentHistory;
-import com.patitosoft.entity.Position;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
+
+import static com.patitosoft.service.utils.PositionUtils.getPosition;
 
 public class EmployeeUtils {
 
@@ -47,13 +48,6 @@ public class EmployeeUtils {
         address.setStateName("State");
         address.setCountryName("Country");
         return address;
-    }
-
-    public static Position getPosition() {
-        Position position = new Position();
-        position.setPositionId(1L);
-        position.setPositionName("Position");
-        return position;
     }
 
     public static EmploymentHistory getEmploymentHistory() {

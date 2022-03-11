@@ -2,35 +2,25 @@ package com.patitosoft.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.patitosoft.api.EmployeeAdminApi;
+import com.patitosoft.api.EmployeeApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
-import com.patitosoft.dto.EmployeeTotalsDTO;
-import com.patitosoft.dto.EmployeeUpdateDTO;
-import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.views.UserType;
 
 @RestController
 @RequestMapping("employees")
 public class EmployeeController {
 
-    private final EmployeeAdminApi employeeApi;
+    private final EmployeeApi employeeApi;
 
-    public EmployeeController(EmployeeAdminApi employeeAdminApi) {
+    public EmployeeController(EmployeeApi employeeAdminApi) {
         this.employeeApi = employeeAdminApi;
     }
 
@@ -53,60 +43,5 @@ public class EmployeeController {
     @GetMapping("/birthdays")
     public BirthdaysDTO getWeeklyBirthdays() {
         return employeeApi.getWeeklyBirthdays();
-    }
-
-    // TODO: All endpoints after this should only be accessible by an Admin user. Implement security to avoid multiple endpoints.
-    @GetMapping("/admin/{email}")
-    public EmployeeDTO getEmployeeForAdmin(@PathVariable String email) {
-        return employeeApi.getEmployeeForAdmin(email);
-    }
-
-    @GetMapping("/admin")
-    public List<EmployeeDTO> getEmployeesByCriteriaForAdmin(
-        @RequestParam(value = "firstName", required = false) String firstName,
-        @RequestParam(value = "lastName", required = false) String lastName,
-        @RequestParam(value = "position", required = false) String position,
-        @RequestParam(value = "exEmployees", required = false, defaultValue = "false") Boolean exEmployees
-    ) {
-        return employeeApi.getEmployeesByCriteriaForAdmin(firstName, lastName, position, exEmployees);
-    }
-
-    @GetMapping(value = "/admin/totals")
-    public EmployeeTotalsDTO getEmployeeTotals(
-        @RequestParam(value = "byGender", required = false, defaultValue = "false") boolean gender,
-        @RequestParam(value = "byPosition", required = false, defaultValue = "false") boolean position,
-        @RequestParam(value = "byAddress", required = false, defaultValue = "false") boolean address) {
-        return employeeApi.getEmployeeTotals(gender, position, address);
-    }
-
-    @PostMapping(value = "/admin")
-    public EmployeeDTO createEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
-        return employeeApi.createEmployee(employeeDTO);
-    }
-
-    @PatchMapping("/admin/{email}")
-    public EmployeeDTO updateEmployee(@PathVariable String email, @RequestBody @Valid EmployeeUpdateDTO employeeDTO) {
-        return employeeApi.updateEmployee(email, employeeDTO);
-    }
-
-    @PutMapping("/admin/{email}")
-    public EmployeeDTO replaceEmployee(@PathVariable String email, @RequestBody @Valid EmployeeDTO employeeDTO) {
-        return employeeApi.replaceEmployee(email, employeeDTO);
-    }
-
-    @PatchMapping("/admin/{email}/position/{position}")
-    public EmployeeDTO assignEmployeePosition(@PathVariable String email, @PathVariable Long position,
-        @RequestBody @Valid EmploymentDTO employmentDTO) {
-        return employeeApi.assignEmployeePosition(email, position, employmentDTO);
-    }
-
-    @DeleteMapping("/admin/{email}")
-    public void fireEmployee(@PathVariable String email) {
-        employeeApi.fireEmployee(email);
-    }
-
-    @PatchMapping("/admin/{email}/reactivate")
-    public EmployeeDTO reactivateEmployee(@PathVariable String email) {
-        return employeeApi.reactivateEmployee(email);
     }
 }

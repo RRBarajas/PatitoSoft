@@ -7,43 +7,40 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.patitosoft.api.EmployeeAdminApi;
+import com.patitosoft.api.EmployeeApi;
 import com.patitosoft.dto.BirthdaysDTO;
 import com.patitosoft.dto.EmployeeDTO;
 import com.patitosoft.dto.EmployeeTotalsDTO;
 import com.patitosoft.dto.EmployeeUpdateDTO;
 import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.entity.Employee;
-import com.patitosoft.entity.EmploymentHistory;
 import com.patitosoft.projections.EmployeeForTotals;
 import com.patitosoft.projections.EmployeesBirthdays;
 import com.patitosoft.repository.EmployeeRepository;
-import com.patitosoft.repository.EmploymentHistoryRepository;
 import com.patitosoft.service.exception.EmployeeAlreadyExistsException;
 import com.patitosoft.service.exception.EmployeeNotFoundException;
 import com.patitosoft.service.exception.EmployeeNotInactiveException;
 import com.patitosoft.service.exception.InvalidEmailException;
-import com.patitosoft.service.exception.InvalidPositionException;
 import com.patitosoft.service.exception.MultipleCurrentPositionsException;
 import com.patitosoft.service.mapper.EmployeeMapper;
 
 @Service
-public class EmployeeService implements EmployeeAdminApi {
+public class EmployeeService implements EmployeeApi, EmployeeAdminApi {
 
     private final EmployeeRepository repository;
 
-    private final EmploymentHistoryRepository historyRepository;
-
     private final EmployeeMapper mapper;
 
+    private final PositionService positionService;
+
     public EmployeeService(EmployeeRepository repository,
-        EmploymentHistoryRepository historyRepository,
-        EmployeeMapper mapper) {
+        EmployeeMapper mapper,
+        PositionService positionService) {
         this.repository = repository;
-        this.historyRepository = historyRepository;
         this.mapper = mapper;
+        this.positionService = positionService;
     }
 
     @Override
@@ -54,14 +51,21 @@ public class EmployeeService implements EmployeeAdminApi {
     }
 
     @Override
-    public EmployeeDTO getEmployeeForAdmin(String email) {
-        Employee employee = repository.findById(email.toLowerCase()).orElseThrow(() -> new EmployeeNotFoundException(email));
-        return mapper.employeeToEmployeeDTO(employee);
+    public List<EmployeeDTO> getEmployeesByCriteria(String firstName, String lastName, String position) {
+        return getEmployeesByCriteriaForAdmin(firstName, lastName, position, false);
     }
 
     @Override
-    public List<EmployeeDTO> getEmployeesByCriteria(String firstName, String lastName, String position) {
-        return getEmployeesByCriteriaForAdmin(firstName, lastName, position, false);
+    public BirthdaysDTO getWeeklyBirthdays() {
+        LocalDate today = LocalDate.now();
+        List<EmployeesBirthdays> birthdays = repository.findByBirthDateBetween(today, today.plusDays(7));
+        return mapper.employeesBirthDaysToDTO(birthdays, today);
+    }
+
+    @Override
+    public EmployeeDTO getEmployeeForAdmin(String email) {
+        Employee employee = repository.findById(email.toLowerCase()).orElseThrow(() -> new EmployeeNotFoundException(email));
+        return mapper.employeeToEmployeeDTO(employee);
     }
 
     @Override
@@ -78,13 +82,6 @@ public class EmployeeService implements EmployeeAdminApi {
     public EmployeeTotalsDTO getEmployeeTotals(boolean gender, boolean position, boolean address) {
         List<EmployeeForTotals> totals = repository.findEmployeesForTotals();
         return mapper.employeeTotalsToEmployeeTotalsDTO(totals, gender, position, address);
-    }
-
-    @Override
-    public BirthdaysDTO getWeeklyBirthdays() {
-        LocalDate today = LocalDate.now();
-        List<EmployeesBirthdays> birthdays = repository.findByBirthDateBetween(today, today.plusDays(7));
-        return mapper.employeesBirthDaysToDTO(birthdays, today);
     }
 
     @Override
@@ -132,24 +129,10 @@ public class EmployeeService implements EmployeeAdminApi {
         return mapper.employeeToEmployeeDTO(savedEmployee);
     }
 
-    @Transactional
     @Override
-    public EmployeeDTO assignEmployeePosition(String email, Long position, EmploymentDTO employmentDTO) {
+    public EmployeeDTO assignEmployeePosition(String email, EmploymentDTO employmentDTO) {
         validateEmployeeIsActive(email);
-        validatePositionId(position, employmentDTO);
-        Optional<EmploymentHistory> currentPosition = historyRepository.findByEmployeeEmailAndCurrentTrue(email.toLowerCase());
-
-        // TODO: Where is the atomicity? Right now, if the second save fails, the first does not get rolled back
-        if (employmentDTO.getCurrentPosition() && currentPosition.isPresent()) {
-            EmploymentHistory oldPosition = currentPosition.get();
-            oldPosition.setCurrent(Boolean.FALSE);
-            oldPosition.setTo(LocalDateTime.now());
-            historyRepository.save(oldPosition);
-            employmentDTO.setTo(null);
-        }
-        EmploymentHistory entity = mapper.employmentDTOToEmploymentHistory(employmentDTO);
-        entity.setEmployeeEmail(email.toLowerCase());
-        historyRepository.saveAndFlush(entity);
+        positionService.assignEmployeePosition(email, employmentDTO);
         return getEmployeeForAdmin(email);
     }
 
@@ -186,16 +169,10 @@ public class EmployeeService implements EmployeeAdminApi {
 
     private void validateSingleCurrentPosition(EmployeeDTO employeeDTO) {
         if (employeeDTO.getEmploymentHistory() != null) {
-            long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(EmploymentDTO::getCurrentPosition).count();
+            long currentPositions = employeeDTO.getEmploymentHistory().stream().filter(EmploymentDTO::isCurrentPosition).count();
             if (currentPositions > 1) {
                 throw new MultipleCurrentPositionsException(employeeDTO.getEmail());
             }
-        }
-    }
-
-    private void validatePositionId(Long position, EmploymentDTO employmentDTO) {
-        if (!position.equals(employmentDTO.getPositionId())) {
-            throw new InvalidPositionException();
         }
     }
 }

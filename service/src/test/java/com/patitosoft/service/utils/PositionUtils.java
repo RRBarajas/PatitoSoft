@@ -1,8 +1,10 @@
 package com.patitosoft.service.utils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.patitosoft.dto.EmploymentDTO;
 import com.patitosoft.dto.PositionDTO;
 import com.patitosoft.entity.Position;
 import com.patitosoft.projections.SalariesPerPosition;
@@ -28,6 +30,24 @@ public class PositionUtils {
         position.setPositionId(1L);
         position.setPositionName("Position");
         return position;
+    }
+
+    public static EmploymentDTO getEmploymentDTO() {
+        EmploymentDTO position = new EmploymentDTO();
+        position.setPositionId(1L);
+        position.setPositionName("Position");
+        position.setSalary(100D);
+        position.setFrom(LocalDateTime.now());
+        position.setCurrentPosition(Boolean.TRUE);
+        return position;
+    }
+
+    public static List<EmploymentDTO> getEmploymentListDTO() {
+        return List.of(getEmploymentDTO());
+    }
+
+    public static List<EmploymentDTO> getDuplicatedEmploymentListDTO() {
+        return List.of(getEmploymentDTO(), getEmploymentDTO());
     }
 
     public static List<SalariesPerPosition> getSalariesPerPosition() {
